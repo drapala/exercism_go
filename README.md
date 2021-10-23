@@ -1,2 +1,3 @@
 # exercism_go
- My exercism solutions
+
+Mysolutions for Go track at [Exercism](https://exercism.org/profiles/mdrakiburrahman).
