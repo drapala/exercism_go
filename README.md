@@ -1,2 +1,2 @@
 # exercism_go
- My exercism solutions
+ My exercism solutions for Golang
