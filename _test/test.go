@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"sort"
 )
 
 type Record struct {
 	ID     int
-	Parent int // 0 if parent
+	Parent int // 0 if root
 }
 
 type Node struct {
@@ -15,7 +16,8 @@ type Node struct {
 	Children []*Node
 }
 
-func sortRecord(records []Record) []Record {
+// Only runs once during execution
+func sortRecord(records []Record) {
 	// Sort records by Parent first, and then ID
 	for i := 0; i < len(records); i++ {
 		for j := i + 1; j < len(records); j++ {
@@ -31,39 +33,56 @@ func sortRecord(records []Record) []Record {
 			}
 		}
 	}
-	return records
 }
 
-func appendToChild(OutputNode *Node, record Record) {
-	fmt.Println("Appending to child")
-	fmt.Println(OutputNode, record)
-	OutputNode.Children = append(OutputNode.Children, &Node{ID: record.ID})	
-}
+// Only runs once during execution
+func checkContinuousIDs(records []Record) bool {
+	var ID_array []int
+	for i := 0; i < len(records); i++ {
+		ID_array = append(ID_array, records[i].ID)
+	}
+	// Sort array
+	sort.Ints(ID_array)
 
-func findParentNode(PreviousNodes *Node, Parent int) (*Node, error){
-	fmt.Println("Finding parent node ", Parent)
-	fmt.Println("Previous Nodes: ", PreviousNodes)
-	for _, node := range PreviousNodes.Children {
-		fmt.Println("Checking Node: ", node)
-		// Parent is at this level
-		if node.ID == Parent {
-			fmt.Println("Found parent node: ", node.ID)
-			return node, nil
-		} else {
-			// Parent is at a lower level
-			ParentNode, err := findParentNode(node, Parent)
-			if err == nil {
-				return ParentNode, nil
+	// Check if IDs are continuous
+	for i := 0; i <= len(ID_array)-1; i++ {
+		if i != 0 {
+			if ID_array[i] > ID_array[i-1]+1 {
+				return false
 			}
 		}
 	}
-	return nil, fmt.Errorf("Parent node not found!")
+	return true
 }
 
-func printNodesRecursive(node *Node) {
-	fmt.Println(node.ID)
-	for _, child := range node.Children {
-		printNodesRecursive(child)
+func childExists(node *Node, ID int) bool {
+	for i, child := range node.Children { // Room for optimization
+
+		fmt.Println("childExists: ", i, " of ", len(node.Children))
+
+		if child.ID == ID {
+			return true
+		}
+	}
+	return false
+}
+
+func appendParentAddress(ParentAddress map[int]*Node, Parent *Node, ID int) {
+	ParentAddress[ID] = Parent
+}
+
+func appendToParent(OutputNode *Node, record Record) (*Node, error) {
+	// Check if child exists
+	if childExists(OutputNode, record.ID) {
+		return nil, fmt.Errorf("child already exists")
+	} else {
+		// If parent is higher than child, throw error
+		if OutputNode.ID > record.ID {
+			return nil, fmt.Errorf("parent is higher than child")
+		}
+		// If no errors, append to parent
+		OutputNode.Children = append(OutputNode.Children, &Node{ID: record.ID})
+		return &Node{ID: record.ID}, nil
 	}
 }
 
@@ -72,36 +91,89 @@ func Build(records []Record) (*Node, error) {
 	if reflect.DeepEqual(records, []Record{}) {
 		return nil, nil
 	}
-	
-	// Sort the records
-	// sortRecord(records)
-	fmt.Println(sortRecord(records))
 
+	// Sort the records
+	sortRecord(records)
+
+	// Check if IDs are continuous
+	if !checkContinuousIDs(records) {
+		return nil, fmt.Errorf("IDs are not continuous")
+	}
+
+	// Print records
+	fmt.Println("Records:", records)
+	fmt.Println("# of Records:", len(records))
+	fmt.Println("##############\n")
+
+	// Create a slice to contain memory addresses of nodes
+	var AddressMap map[int]*Node
+	AddressMap = make(map[int]*Node)
+
+	// Create the root node
 	OutputNode := Node{}
+
 	// Loop over records
-	for _, record := range records {
-		// Root node
+	for i, record := range records {
+
+		fmt.Println("Record #: ", i, " of ", len(records))
+		fmt.Println("Record: ", record.ID)
+
+		// This is the root node
 		if record.Parent == 0 && record.ID == 0 {
+			// Not first record, but is root
+			if i != 0 && record.ID == 0 {
+				return nil, fmt.Errorf("duplicate root")
+			}
 			OutputNode.ID = record.ID
+			AddressMap[record.ID] = &OutputNode
+			fmt.Println("ParentAddressMap: ", AddressMap)
 		} else {
-			// Children belong at current level
+			// Error handling for the root node cases
+			// Root node has parent
+			if record.Parent != 0 && record.ID == 0 {
+				return nil, fmt.Errorf("root node has a parent")
+			}
+			// First record, but not root
+			if i == 0 && record.ID != 0 {
+				return nil, fmt.Errorf("first record is not root")
+			}
+			// Children belong at root level
 			if record.Parent == OutputNode.ID {
-				appendToChild(&OutputNode, record)
-			} else {
-				// Children must belong at a lower level
-				ParentNode, error := findParentNode(&OutputNode, record.Parent)
-				if error == nil {
-					fmt.Println("Trying to append: ", record)
-					appendToChild(ParentNode, record)
+				childAddress, err := appendToParent(&OutputNode, record)
+				if err != nil {
+					return nil, fmt.Errorf("child already exists")
 				} else {
-					panic("Parent node not found!")
+					AddressMap[record.ID] = childAddress
+				}
+			} else {
+				// Children must belong at a lower level of root
+				// Get the Parent's memory address as a child from previous runs
+				fmt.Println("ParentAddressMap Before: ", AddressMap)
+
+				ParentNode := AddressMap[record.Parent]
+
+				fmt.Println("looking for parent: ", record.Parent)
+				fmt.Println("value0:", ParentAddressMap[0])
+				fmt.Println("value1:", ParentAddressMap[1])
+				fmt.Println("ParentNode: ", ParentNode)
+
+				// Add Parent's memory address to the map
+				ParentAddressMap[record.ID] = ParentNode
+				fmt.Println("ParentAddressMap After: ", ParentAddressMap, "\n")
+
+				// Parent node doesn't exist
+				if ParentNode == nil {
+					if appendToParent(ParentNode, record) != nil {
+						return nil, fmt.Errorf("child already exists")
+					}
+				} else {
+					return nil, fmt.Errorf("parent node doesn't exist")
 				}
 			}
 		}
+		fmt.Println("---------")
 	}
-	// Remover after
-	printNodesRecursive(&OutputNode)
-
+	fmt.Println(ParentAddressMap)
 	return &OutputNode, nil
 }
 
@@ -116,10 +188,13 @@ func main() {
 	// 	{ID: 6, Parent: 2},
 	// }
 	InputRecord := []Record{
-		{ID: 2, Parent: 1},
-		{ID: 1, Parent: 0},
+		{ID: 5, Parent: 2},
 		{ID: 3, Parent: 2},
+		{ID: 2, Parent: 0},
+		{ID: 4, Parent: 1},
+		{ID: 1, Parent: 0},
 		{ID: 0},
+		{ID: 6, Parent: 2},
 	}
 
 	OutputNode, err := Build(InputRecord)
@@ -128,5 +203,11 @@ func main() {
 		fmt.Println(err)
 	} else {
 		printNodesRecursive(OutputNode)
+	}
+}
+func printNodesRecursive(node *Node) {
+	fmt.Println(node.ID)
+	for _, child := range node.Children {
+		printNodesRecursive(child)
 	}
 }
