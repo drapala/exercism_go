@@ -55,11 +55,9 @@ func checkContinuousIDs(records []Record) bool {
 	return true
 }
 
+// Checks if child exists already in the node's children
 func childExists(node *Node, ID int) bool {
-	for i, child := range node.Children { // Room for optimization
-
-		fmt.Println("childExists: ", i, " of ", len(node.Children))
-
+	for _, child := range node.Children {
 		if child.ID == ID {
 			return true
 		}
@@ -67,41 +65,34 @@ func childExists(node *Node, ID int) bool {
 	return false
 }
 
-func appendToParent(OutputNode *Node, record Record) error {
+// Appends a child node to the parent node
+func appendToParent(OutputNode *Node, record Record) (*Node, error) {
 	// Check if child exists
 	if childExists(OutputNode, record.ID) {
-		return fmt.Errorf("child already exists")
+		return nil, fmt.Errorf("child already exists")
 	} else {
 		// If parent is higher than child, throw error
 		if OutputNode.ID > record.ID {
-			return fmt.Errorf("parent is higher than child")
+			return nil, fmt.Errorf("parent is higher than child")
 		}
 		// If no errors, append to children
-		OutputNode.Children = append(OutputNode.Children, &Node{ID: record.ID})
-		return nil
+		ChildAddress := &Node{ID: record.ID}
+		OutputNode.Children = append(OutputNode.Children, ChildAddress)
+		return ChildAddress, nil
 	}
 }
 
-func findParentNode(PreviousNodes *Node, Parent int) (*Node, error) {
-
-	fmt.Println("All Nodes:", PreviousNodes)
-	fmt.Println("My Parent is:", Parent)
-
-	for _, node := range PreviousNodes.Children {
-		// Parent is at this level
-		if node.ID == Parent {
-			return node, nil
-		} else {
-			// Parent is at a lower level
-			ParentNode, err := findParentNode(node, Parent) // Room for optimization
-			if err == nil {
-				return ParentNode, nil
-			}
-		}
+// Returns the memory address of the Parent node from the cache map
+func findParentNode(AddressMap map[int]*Node, Parent int) (*Node, error) {
+	ParentNode := AddressMap[Parent]
+	if ParentNode == nil {
+		return nil, fmt.Errorf("parent node not found")
+	} else {
+		return ParentNode, nil
 	}
-	return nil, fmt.Errorf("parent node not found")
 }
 
+// Builds a tree from a list of records
 func Build(records []Record) (*Node, error) {
 	// Edge case handling
 	if reflect.DeepEqual(records, []Record{}) {
@@ -117,23 +108,32 @@ func Build(records []Record) (*Node, error) {
 	}
 
 	// Print records
-	fmt.Println("Records:", records)
+	// fmt.Println(records)
 
 	// Create the root node
 	OutputNode := Node{}
 
+	// Create a slice to contain memory addresses of nodes
+	var AddressMap map[int]*Node
+	AddressMap = make(map[int]*Node)
+
 	// Loop over records
 	for i, record := range records {
-		fmt.Println("Record: ", i, " of ", len(records))
 		// This is the root node
 		if record.Parent == 0 && record.ID == 0 {
 			// Not first record, but is root
 			if i != 0 && record.ID == 0 {
 				return nil, fmt.Errorf("duplicate root")
 			}
+			// Create the root node
 			OutputNode.ID = record.ID
+			// 1B. Add the root node to the address map
+			AddressMap[record.ID] = &OutputNode
 		} else {
-			// Error handling for the root node cases
+
+			// #######################################
+			// Error handling - Parent = Root
+			// #######################################
 			// Root node has parent
 			if record.Parent != 0 && record.ID == 0 {
 				return nil, fmt.Errorf("root node has a parent")
@@ -142,22 +142,30 @@ func Build(records []Record) (*Node, error) {
 			if i == 0 && record.ID != 0 {
 				return nil, fmt.Errorf("first record is not root")
 			}
-			// Children belong at root level
+			// #######################################
+			// Children that belong at root level
+			// #######################################
 			if record.Parent == OutputNode.ID {
-				if appendToParent(&OutputNode, record) != nil {
+				ChildAddress, err := appendToParent(&OutputNode, record)
+				AddressMap[record.ID] = ChildAddress
+				if err != nil {
 					return nil, fmt.Errorf("child already exists")
 				}
 			} else {
-				// Children must belong at a lower level of root
-				ParentNode, error := findParentNode(&OutputNode, record.Parent)
-
-				if error == nil {
-					if appendToParent(ParentNode, record) != nil {
-						return nil, fmt.Errorf("child already exists")
-					}
-				} else {
+				// #######################################
+				// Children lower than root
+				// #######################################
+				ParentNode, _ := findParentNode(AddressMap, record.Parent)
+				if ParentNode == nil {
 					return nil, fmt.Errorf("parent node doesn't exist")
 				}
+				// Parent found, append child to parent
+				ChildAddress, err := appendToParent(ParentNode, record)
+				if err != nil {
+					return nil, fmt.Errorf("child already exists")
+				}
+				// Add valid child address to cache map for next iteration
+				AddressMap[record.ID] = ChildAddress
 			}
 		}
 	}
