@@ -1,4 +1,4 @@
-package main
+package robotname
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 )
 
 // Global variable to track the name of the robot
-var GlobaNum []int = []int{0, 0, 0}
+var GlobalNum []int = []int{0, 0, 0}
 
 // Define the Robot type
 type Robot struct {
@@ -17,14 +17,14 @@ type Robot struct {
 func (r *Robot) Name() (string, error) {
     // Return new name if we don't have one yet
 	if r.name == "" {
-        fmt.Println(r.name, "is blank")
         // Calculate name based on GlobalNum
-        robotName := calculateName(GlobaNum)
+        robotName := calculateName(GlobalNum)
 		// Increment GlobalNum
 		var err error
-		GlobaNum, err = incrementNum(GlobaNum)
+		GlobalNum, err = incrementNum(GlobalNum)
 		// Check if out of range
 		if err == nil {
+			r.name = robotName
 			return robotName, nil
 		} else {
 			return "", err
@@ -75,20 +75,3 @@ func calculateName(num []int) string {
     return str
 }
 
-
-////
-
-func New() *Robot { return new(Robot) }
-
-func main() {
-    r := New()
-
-    var maxNames = 26 * 26 * 10 * 10 * 10
-
-    for i := 0; i < maxNames; i++ {
-        var RobotName string
-        RobotName, _ = r.Name()
-        fmt.Println(RobotName)
-        //GlobaNum, _ = incrementNum(GlobaNum)
-    }
-}
