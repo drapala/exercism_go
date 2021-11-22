@@ -55,8 +55,8 @@ func incrementNum(num []int) ([]int, error) {
         num[1] = 0 // Back to A
     }
     // Check if we have reached the end
-    if num[0] >= 26 {
-        return nil, errors.New("out of range")
+    if num[0] >= 26 && num[2] > 0 {
+        return nil, errors.New("index out of range")
     }
     return num, nil
 }
