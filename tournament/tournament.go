@@ -1,11 +1,9 @@
-package main
+package tournament
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 )
@@ -126,7 +124,7 @@ func returnScore(tally []teamScore) string {
 		output += fmt.Sprintf("\n%s| %2d | %2d | %2d | %2d | %2d",
 			pad(team.name), team.mp, team.w, team.d, team.l, team.p)
 	}
-	return output
+	return output + string(rune(10))
 }
 
 // Sort tally in expected format
@@ -155,6 +153,10 @@ func Tally(reader io.Reader, writer io.Writer) error {
 		// Split each line into teams
 		outcome := strings.Split(line, ";")
 
+		if len(outcome) != 3 {
+			return errors.New("Each line must contain three semicolon-separated values")
+		}
+
 		// Check for errors
 		if outcome[2] != "win" && outcome[2] != "loss" && outcome[2] != "draw" {
 			return errors.New("Invalid input")
@@ -171,27 +173,4 @@ func Tally(reader io.Reader, writer io.Writer) error {
 	_, _ = fmt.Fprintf(writer, returnScore(tally))
 
 	return err
-}
-
-func main() {
-	var input = `
-
-Allegoric Alaskians;Blithering Badgers;win
-Devastating Donkeys;Allegoric Alaskians;win
-# Catastrophic Loss of the Californians
-Courageous Californians;Blithering Badgers;loss
-
-Blithering Badgers;Devastating Donkeys;loss
-Allegoric Alaskians;Courageous Californians;win
-Devastating Donkeys;Courageous Californians;draw
-    
-    
-    `
-	var buffer bytes.Buffer
-	err := Tally(strings.NewReader(input), &buffer)
-
-	// Print buffer to stdout
-	if err == nil {
-		_, _ = io.Copy(os.Stdout, &buffer)
-	}
 }
