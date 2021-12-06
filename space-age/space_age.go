@@ -1,6 +1,4 @@
-package main
-
-import "fmt"
+package space
 
 type Planet string
 
@@ -33,14 +31,4 @@ func Age(seconds float64, planet Planet) float64 {
 	PlanetAge = seconds / (EarthYear * multiplier)
 
 	return PlanetAge
-}
-
-func main() {
-	var seconds float64 = 1000000000
-	var planet Planet = "Earth"
-	fmt.Println(Age(seconds, planet))
-
-	seconds = 2134835688
-	planet = "Mercury"
-	fmt.Println(Age(seconds, planet))
 }
