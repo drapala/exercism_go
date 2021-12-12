@@ -2,7 +2,6 @@ package tournament
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"strings"
 	"testing"
@@ -106,25 +105,6 @@ var errorTestCases = []string{
 	"Devastating Donkeys;Allegoric Alaskians;dra",
 }
 
-// Find difference between the strings
-func diff(expected, actual string) string {
-	var buf bytes.Buffer
-	for i := 0; i < len(expected) && i < len(actual); i++ {
-		if expected[i] != actual[i] {
-			fmt.Println([]rune(expected[i:]), []rune(actual[i:]))
-			fmt.Fprintf(&buf, "diff at %d: expected '%s', actual '%s'\n", i, expected[i:], actual[i:])
-			break
-		}
-	}
-	if len(expected) < len(actual) {
-		fmt.Fprintf(&buf, "expected was shorter, %d < %d\n", len(expected), len(actual))
-	}
-	if len(actual) < len(expected) {
-		fmt.Fprintf(&buf, "actual was shorter, %d < %d\n", len(actual), len(expected))
-	}
-	return buf.String()
-}
-
 func TestTallyHappy(t *testing.T) {
 	for _, tt := range happyTestCases {
 		reader := strings.NewReader(tt.input)
@@ -137,10 +117,6 @@ func TestTallyHappy(t *testing.T) {
 				tt.description, err)
 		}
 		if actual != tt.expected {
-			// Find difference between the strings
-			// diff := diff(tt.expected, actual)
-			// fmt.Println(diff)
-
 			t.Fatalf("Tally for input named %q was expected to return...\n%s\n...but returned...\n%s",
 				tt.description, tt.expected, actual)
 		}

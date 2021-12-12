@@ -99,9 +99,4 @@ var testCases = []struct {
 		":9",
 		false,
 	},
-	{
-		"benchmark number",
-		"2323 2005 7766 3554",
-		true,
-	},
 }

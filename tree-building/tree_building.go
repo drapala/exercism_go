@@ -106,7 +106,10 @@ func Build(records []Record) (*Node, error) {
 	if !checkContinuousIDs(records) {
 		return nil, fmt.Errorf("IDs are not continuous")
 	}
-	
+
+	// Print records
+	// fmt.Println(records)
+
 	// Create the root node
 	OutputNode := Node{}
 
