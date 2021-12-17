@@ -2,29 +2,39 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"math"
 )
 
-func CalculateProduct(subdigit string) int {
-	var result int = 1
-	for _, v := range subdigit {
-		conv, _ := strconv.Atoi(string(v))
-		result = result * conv
+type Triplet [3]int
+
+func checkNatural(a float64) bool{
+	if a == float64(int64(a)) {
+		return true
 	}
-	return result
+	return false
+}
+
+func returnPythagoran(a, b int) float64 {
+	return math.Sqrt(float64(a*a + b*b))
 }
 
 func main() {
-	digits := "1027839564"
-	span := 5
-	perm := len(digits) - span + 1
+	var sum int
+	sum = 1000
 
-	var max_product int = 0
-	for i := 0; i < perm; i++ {
-		product := CalculateProduct(digits[i:i+span])
-		if max_product < product {
-			max_product = product
+	var TripletArray []Triplet
+	
+	for a := 1; a <= sum; a++ {
+		for b := 1; a + b <= sum; b++ {
+			c := returnPythagoran(a, b)
+			if checkNatural(c) {
+				// Check if sum property matches up
+				if a + b + int(c) == sum && a < b && b < int(c) {
+					TripletArray = append(TripletArray, Triplet{a, b, int(c)})
+				}
+			}
 		}
 	}
-	fmt.Println("Max product is: ", max_product)
+	
+	fmt.Println(TripletArray)
 }
