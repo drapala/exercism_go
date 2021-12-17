@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 func findSeqEnd(text string, letterOfInterest string) int{
 	for j := 0; j < len(text); j++ {
@@ -18,7 +21,7 @@ func findSeqEnd(text string, letterOfInterest string) int{
 	return -1
 }
 
-func ResultAppend(input string, count int) string {
+func RLEResultAppend(input string, count int) string {
 	// Add to result
 	var result string 
 
@@ -29,26 +32,55 @@ func ResultAppend(input string, count int) string {
 	return result
 }
 
+func findNumEnd(text string) (int, int) {
+	var number int
+	for j := 0; j < len(text); j++ {
+		// If we went over to a letter, number must have ended at previous index
+		if ('0' <= text[j] && text[j] <= '9') {
+			continue
+		} else {
+			// Went over to a letter
+			number, _ = strconv.Atoi(text[:j])
+			return number, j
+		}
+	}
+	return -1, -1
+}
+
+func RLDResultAppend(count int, letter string) string {
+	//fmt.Println("Number: ", count, " | String: ", letter )
+	var result string
+	// Add count number of times
+	for i := 1; i <= count; i++{
+		result += letter
+	}
+	return result
+}
+
 func main() {
-	input := "AABBBCCCC"
+	input := "12WB12W3B24WB"
 	fmt.Println(input)
 
 	var result string
-	var local_index, global_index int
+	var count, local_index int
 
 	for i := 0; i < len(input); i++ {
-		fmt.Println("Letter of interest: ", string(input[i]), "at i: ", i)
-		local_index = findSeqEnd(input[i:], string(input[i]))
-		global_index = i + local_index
-		fmt.Println("Last ", string(input[i]),  " at global index: ", global_index)
-		fmt.Println("Count: ", local_index + 1)
-		
-		// Add to result
-		result += ResultAppend(string(input[i]), local_index + 1)
+		if ('0' <= input[i] && input[i] <= '9') {
+			// Got a number
+			// Find end of number
+			count, local_index = findNumEnd(input[i:])
+			fmt.Println("Number: ", count)
+			// Increment i to start after local_index
+			i += local_index
 
-		i = global_index
+			// Next must be a single letter
+			fmt.Println("String: ", string(input[i]))
+			result += RLDResultAppend(count, string(input[i]))
+        } else {
+			// Got the string directly
+			fmt.Println("String: ", string(input[i]))
+			result += RLDResultAppend(1, string(input[i]))
+		}
 	}
-
 	fmt.Println(result)
-
 }
