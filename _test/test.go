@@ -2,39 +2,36 @@ package main
 
 import (
 	"fmt"
-	"math"
+	"unicode"
 )
 
-type Triplet [3]int
-
-func checkNatural(a float64) bool{
-	if a == float64(int64(a)) {
-		return true
+func RotationalCipher(plain string, shiftKey int) string {
+	var result string
+	var z rune
+	for _, c := range plain {
+		if  unicode.ToLower(c) >= 'a' &&  unicode.ToLower(c) <= 'z' {
+			if unicode.IsLower(c) {
+				z = 'z' 
+			} else {
+				z = 'Z'
+			}
+			// If letters, rotate
+			if c + rune(shiftKey) > z {
+				result += string(c + rune(shiftKey) - 26)
+			} else {
+				result += string(c + rune(shiftKey))
+			}
+		} else {
+			// Otherwise, add in as is
+			result += string(c)
+		}
 	}
-	return false
-}
-
-func returnPythagoran(a, b int) float64 {
-	return math.Sqrt(float64(a*a + b*b))
+	fmt.Println(result)
+	return result
 }
 
 func main() {
-	var sum int
-	sum = 1000
-
-	var TripletArray []Triplet
-	
-	for a := 1; a <= sum; a++ {
-		for b := 1; a + b <= sum; b++ {
-			c := returnPythagoran(a, b)
-			if checkNatural(c) {
-				// Check if sum property matches up
-				if a + b + int(c) == sum && a < b && b < int(c) {
-					TripletArray = append(TripletArray, Triplet{a, b, int(c)})
-				}
-			}
-		}
-	}
-	
-	fmt.Println(TripletArray)
+	const inputShiftKey = 13
+	var inputPlain string = "The quick brown fox jumps over the lazy dog."
+	RotationalCipher(inputPlain, inputShiftKey)
 }
