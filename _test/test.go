@@ -5,33 +5,37 @@ import (
 	"unicode"
 )
 
-func RotationalCipher(plain string, shiftKey int) string {
-	var result string
-	var z rune
-	for _, c := range plain {
-		if  unicode.ToLower(c) >= 'a' &&  unicode.ToLower(c) <= 'z' {
-			if unicode.IsLower(c) {
-				z = 'z' 
-			} else {
-				z = 'Z'
-			}
-			// If letters, rotate
-			if c + rune(shiftKey) > z {
-				result += string(c + rune(shiftKey) - 26)
-			} else {
-				result += string(c + rune(shiftKey))
-			}
-		} else {
-			// Otherwise, add in as is
-			result += string(c)
-		}
-	}
-	fmt.Println(result)
-	return result
+func CalculateCipher(char rune) rune {
+	return rune(int('a') + int(rune('z') - char))
 }
 
 func main() {
-	const inputShiftKey = 13
-	var inputPlain string = "The quick brown fox jumps over the lazy dog."
-	RotationalCipher(inputPlain, inputShiftKey)
+	var s string = "Testing,1 2 3, testing."
+	fmt.Println("Input: ", s)
+
+	var output string
+	var count int
+	var lower rune
+
+	for _, char := range(s) {
+		lower = unicode.ToLower(char)
+		// Only proceed for alphabets and numerics
+		if (lower >= 'a' && lower <= 'z') || (lower >= '0' && lower <= '9') {
+			// Group by 5
+			if count == 5 {
+				output += " "
+				count = 0
+			}
+			if (lower >= 'a' && lower <= 'z') {
+				// Deal with alphabets
+				output += string(CalculateCipher(lower))
+			} else if (lower >= '0' && lower <= '9') {
+				// Deal with numerics
+				output += string(char)
+			}
+			// Increment count
+			count++
+		}
+	}
+	fmt.Println("Output: ", output)
 }
