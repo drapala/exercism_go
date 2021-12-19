@@ -1,94 +1,57 @@
 package main
 
-import (
-	"fmt"
-	"unicode"
-)
+import "fmt"
 
-func normalize(in string) string{
-	var out string
-	for _, c := range(in) {
-		if unicode.IsLetter(c) || unicode.IsNumber(c){
-			out += string(unicode.ToLower(c))
-		}
-	}
-	return out
+type nums struct {
+	value int
+	numtype string
 }
 
-func findRectangleSpecs(area int) (int, int) {
-	for c := 1; c <= area; c++ {
-		for r := 1; r <= c; r++ {
-			if (r * c >= area) && (c - r <= 1){
-				return r, c
-			}
-		}
+func generateNums(limit int) []nums {
+	numArrays := make([]nums, 0)
+	for i := 2; i <= limit ; i++ {
+		currentNum := nums{value: i, numtype: "tbd"}
+		numArrays = append(numArrays, currentNum)
 	}
-	// Couldn't find anything for some reason
-	return -1, -1
+	return numArrays
 }
 
-func padWhitespace(text string, c int) string{
-	var out string = text
-	for i := len(text); i < c; i++ {
-		out += " "
-	}
-	return out
-}
-
-func createRectangle(text string, c int) []string {
-	rectangle := make([]string, 0)
-	var counter int
-	var temp string
-	for i := 0; i < len(text); i++ {
-		temp += string(text[i])
-		counter++
-		// If width is filled up, append block as row and reset for new row
-		if counter == c {
-			rectangle = append(rectangle, temp)
-			temp = ""
-			counter = 0
+func filterprimes(numArray []nums) []int {
+	primes := make([]int, 0)
+	for i:=0; i < len(numArray); i++ {
+		if numArray[i].numtype == "prime" {
+			primes = append(primes, numArray[i].value)
 		}
 	}
-	// Pad and append left over
-	if temp != "" {
-		rectangle = append(rectangle, padWhitespace(temp, c))
-	}
-	return rectangle
-}
-
-func createCipherFromRectangle(rectangle []string) string{
-	var cipher string
-	r := len(rectangle)
-	c := len(rectangle[0])
-	for col := 0; col < c; col++ {
-		for row := 0; row < r; row++ {
-			cipher += string(rectangle[row][col])
-			if row == r - 1{
-				cipher += " "
-			}
-		}
-	}
-	return cipher
+	return primes
 }
 
 func main() {
-	var s string = "If man was meant to stay on the ground, god would have given us roots."
-	fmt.Println("Input: ", s)
+	var limit int = 13
 
-	var normalized string = normalize(s)
-	fmt.Println("Normalized: ", normalized)
-	fmt.Println("Length: ", len(normalized))
+	var numArray []nums
+	numArray = generateNums(limit)
 
-	var r, c int
-	r, c =  findRectangleSpecs(len(normalized))
-	fmt.Println("r:", r, "c:", c)
+	for i := 0; i < len(numArray); i++ {
+		currentVal := numArray[i].value
+		if numArray[i].numtype == "composite"{
+			continue
+		} else if numArray[i].numtype == "tbd" {
+			// Set current to prime
+			numArray[i].numtype = "prime"
+			// index = currentVal - 2
+			// So we add currentVal to get the next multiple's index
+			nextIndex := (currentVal - 2) + currentVal
+			// While loop to mark the rest of the multiples as composites
+			for nextIndex < len(numArray) {
+				numArray[nextIndex].numtype = "composite"
+				nextIndex += currentVal
+			}
+		}			
+	}
+	fmt.Println(numArray)
 
-	var rectangle []string
-	rectangle = createRectangle(normalized, c)
-	fmt.Println(rectangle)
-
-	var cipher string
-	cipher = createCipherFromRectangle(rectangle)
-	fmt.Println(cipher)
+	primes := filterprimes(numArray)
+	fmt.Println(primes)
 
 }
