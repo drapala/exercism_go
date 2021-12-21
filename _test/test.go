@@ -3,6 +3,9 @@ package main
 import "fmt"
 
 func main() {
-	fmt.Println((5 / 2))
-	fmt.Println((5 / 2) / 5)
+	var myList = make([]int, 2)
+	myList[0] = 1
+	myList[1] = 2
+	fmt.Println(myList)
+	myList[2] = 3
 }
