@@ -1,27 +1,14 @@
 package main
 
-import "fmt"
-
-func contains(s []rune, e rune) bool {
-	for _, a := range s {
-		if a == e {
-			return true
-		}
-	}
-	return false
-}
+import (
+	"fmt"
+	"regexp"
+)
 
 func main() {
-	// input := "\\left(\\begin{array}{cc} \\frac{1}{3} & x\\\\ \\mathrm{e}^{x} &... x^2 \\end{array}\\right)"
-	input := "(((185 + 223.85) * 15) - 543)/2"
+	input := "What is -3 plus 7 multiplied by -2?"
+    inter := regexp.MustCompile(`What is `).ReplaceAllString(input, "")
+	output := regexp.MustCompile(`\?`).ReplaceAllString(inter, "")
 
-	var cleaned string
-	match := []rune{'[', ']', '(', ')', '{', '}'}
-
-	for _, c := range input {
-		if contains(match, c) {
-			cleaned += string(c)
-		}
-	}
-	fmt.Println(cleaned)
+	fmt.Println(output)
 }
