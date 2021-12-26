@@ -1,7 +1,6 @@
 package say
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -113,7 +112,12 @@ func GenerateName(n NumStruct) string {
 	if n.thousands != 0 {
 		result += Ones2Hundreds(n.thousands) + " thousand "
 	}
-	if n.thousands != 0 {
+	// Default case since we include 0
+	if n.hundreds == 0 && result != "" {
+		// Got a 0 in hundreds but have other number up top
+		// Add nothing
+	} else {
+		// Flow as usual
 		result += Ones2Hundreds(n.hundreds)
 	}
 
@@ -125,38 +129,5 @@ func Say(n int64) (string, bool) {
 	if n < 0 || n > 999999999999 {
 		return "", false
 	}
-	// 0 - 99
-	fmt.Println(Ones2Hundreds(0))
-	fmt.Println(Ones2Hundreds(9))
-	fmt.Println(Ones2Hundreds(10))
-	fmt.Println(Ones2Hundreds(14))
-	fmt.Println(Ones2Hundreds(19))
-	fmt.Println(Ones2Hundreds(20))
-	fmt.Println(Ones2Hundreds(50))
-	fmt.Println(Ones2Hundreds(51))
-	fmt.Println(Ones2Hundreds(69))
-	fmt.Println(Ones2Hundreds(90))
-	fmt.Println(Ones2Hundreds(98))
-	// 100 - 999
-	fmt.Println(Ones2Hundreds(100))
-	fmt.Println(Ones2Hundreds(123))
-	fmt.Println(Ones2Hundreds(999))
-
-	// Split logic
-	fmt.Println(SplitNum(987654321123))
-	fmt.Println(SplitNum(1000000000))
-	fmt.Println(SplitNum(1002345))
-	fmt.Println(SplitNum(1000000))
-	fmt.Println(SplitNum(1234))
-	fmt.Println(SplitNum(1000))
-	fmt.Println(SplitNum(123))
-	fmt.Println(SplitNum(100))
-	fmt.Println(SplitNum(22))
-	fmt.Println(SplitNum(1))
-
-	// Test Name
-	fmt.Println(GenerateName(SplitNum(987654321123)))
-	fmt.Println(GenerateName(SplitNum(1000000000)))
-
-	return "", false
+	return GenerateName(SplitNum(n)), true
 }
