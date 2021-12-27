@@ -1,28 +1,105 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
-func getDivisors(n int) []int {
-	result := make([]int, 0)
-	for x := 1; x < n; x++ { // Find divisors
-		if n % x == 0 { // Divides cleanly
-			result = append(result, x)
-		}
-	}
-	return result
+type Product struct {
+	Value   int
+	Factors [][2]int // An array of 2-length-arrays of ints
 }
 
-func getDivisorSum(array []int) int {
-	var sum int
-	for _, divisor := range(array) {
-		sum += divisor
+func ProductIndex(value int, products []Product) int {
+	for i, product := range products {
+		if product.Value == value {
+			return i
+		}
 	}
-	return sum
+	return -1
+}
+
+func FactorInArray(factors [][2]int, num1, num2 int) bool{
+	for _, factor := range factors {
+		if [2]int{num2, num1} == factor { // If factor is in array, it must be the other permutation
+			return true
+		}
+	}
+	return false
+}
+
+func getProducts(fmin, fmax int) []Product {
+	products := make([]Product, 0)
+
+	var num1, num2 int
+
+	for num1 = fmin; num1 <= fmax; num1++ {
+		for num2 = fmin; num2 <= fmax; num2++ {
+			value := num1 * num2
+			// 1. If product already exists in array, append factor to it
+			// 	1a. Append factor only if it is unique - considering flipped permutations
+			// 2. If product is new, append it to array
+			existing_index := ProductIndex(value, products)
+			if existing_index != -1 { // Since product already exists in array, append factor to it
+				if !FactorInArray(products[existing_index].Factors, num1, num2) { // Check if unique
+					products[existing_index].Factors = append(products[existing_index].Factors, [2]int{num1, num2})
+				}
+			} else { // Product is new,  append it to array
+				product := Product{
+					Value:   value,
+					Factors: [][2]int{{num1, num2}},
+				}
+				products = append(products, product)
+			}
+		}
+	}
+	return products
+}
+
+func reverseString(input string) string {
+	var output string
+	for i := len(input) - 1; i >= 0; i-- {
+		output += string(input[i])
+	}
+	return output
+}
+
+func isPalindrome(value int) bool {
+	if value < 10 { // Single digit is automatically palindrome
+		return true
+	}
+	value_string := strconv.Itoa(value) // String representation
+	if value_string == reverseString(value_string) { // Compare with reverse
+		return true
+	}
+	return false
+}
+
+func getPalindromeProducts(products []Product) []Product{
+	palindrome_products := make([]Product, 0)
+	for _, product := range products {
+		if isPalindrome(product.Value) {
+			palindrome_products = append(palindrome_products, product)
+		}
+	}
+	return palindrome_products	
 }
 
 func main() {
-	n := 28
-	fmt.Println(n)
-	fmt.Println(getDivisors(n))
-	fmt.Println(getDivisorSum(getDivisors(n)))
+	fmin := 10
+	fmax := 99
+	products := getProducts(fmin, fmax)
+	fmt.Println("products:", products)
+
+	palindrome_products := getPalindromeProducts(products)
+
+	fmt.Println("palindrome products:", palindrome_products)
+
+	var min_product, max_product Product
+	if len(palindrome_products) != 0 {
+		min_product = palindrome_products[0]
+		max_product = palindrome_products[len(palindrome_products)-1]
+	}
+	fmt.Println("min palindrome", min_product)
+	fmt.Println("max palindrome", max_product)
 }
