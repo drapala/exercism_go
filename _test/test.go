@@ -1,53 +1,28 @@
 package main
 
-import (
-	"fmt"
-	"math"
-)
+import "fmt"
 
-func baseconv(n, base int) string {
-	var result string
-	for n > 0 {
-		result = fmt.Sprintf("%d%s", n%base, result)
-		n /= base
+func getDivisors(n int) []int {
+	result := make([]int, 0)
+	for x := 1; x < n; x++ { // Find divisors
+		if n % x == 0 { // Divides cleanly
+			result = append(result, x)
+		}
 	}
 	return result
 }
 
-func reverseArray(input []int) []int{
-	output := make([]int, 0)
-	for i:=len(input)-1; i>=0; i--{
-		output = append(output, input[i])
-	} 
-	return output
-}
-
-func baseconvArray(n, base int) []int {
-	result := make([]int, 0)
-	for n > 0 {
-		result = append(result, n%base)
-		n /= base
+func getDivisorSum(array []int) int {
+	var sum int
+	for _, divisor := range(array) {
+		sum += divisor
 	}
-	return reverseArray(result)
-}
-
-func convertBaseTen(array []int, base int) int{
-	var output int
-	for i:=0; i<len(array); i++{
-		// Basically, this is:
-		// array[i] * base^position 
-		output += array[i] * int(math.Pow(float64(base), math.Abs(float64(i-(len(array)-1)))))
-	}
-	return output
+	return sum
 }
 
 func main() {
-	n:=42
-	fmt.Println(baseconv(n, 2))
-	fmt.Println(baseconvArray(n, 10))
-
-	array_2 := []int{1,0,1,0,1,0}
-
-	fmt.Println(array_2)
-	fmt.Println(convertBaseTen(array_2, 2))
+	n := 28
+	fmt.Println(n)
+	fmt.Println(getDivisors(n))
+	fmt.Println(getDivisorSum(getDivisors(n)))
 }
