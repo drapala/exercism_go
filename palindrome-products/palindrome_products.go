@@ -30,7 +30,6 @@ func FactorInArray(factors [][2]int, num1, num2 int) bool{
 // Append to products slice if palindrome
 func appendPalindromes(num1, num2 int, products *[]Product) {
 	value := num1 * num2
-
 	if isPalindrome(value) {
 		// 1. If product already exists in array, append factor to it
 		// 	1a. Append factor only if it is unique - considering flipped permutations
@@ -53,7 +52,7 @@ func appendPalindromes(num1, num2 int, products *[]Product) {
 func getProducts(fmin, fmax int) []Product {
 	products := make([]Product, 0)
 	var num1, num2 int
-
+	// Start from left
 	for num1 = fmin; num1 <= fmax; num1++ {
 		for num2 = fmin; num2 <= fmax; num2++ {
 			appendPalindromes(num1, num2, &products)
@@ -61,7 +60,7 @@ func getProducts(fmin, fmax int) []Product {
 	}
 	return products
 }
-// Reverse a string
+// Reverse a string - used for checking Palindromes
 func reverseString(input string) string {
 	var output string
 	for i := len(input) - 1; i >= 0; i-- {
@@ -77,23 +76,34 @@ func isPalindrome(value int) bool {
 	value_string := strconv.Itoa(value) // String representation
 	return value_string == reverseString(value_string)
 }
-// Main function called
-func Products(fmin, fmax int) (Product, Product, error) {
-	fmt.Println("===========================================================")
-	fmt.Println("fmin:", fmin)
-	fmt.Println("fmax:", fmax)
-	
-	palindrome_products := getProducts(fmin, fmax)
-	fmt.Println("palindrome products:", palindrome_products)
-
-	var min_product, max_product Product
-	if len(palindrome_products) != 0 {
-		min_product = palindrome_products[0]
-		max_product = palindrome_products[len(palindrome_products)-1]
+// Find min and max products from the completed slice
+func findMinAndMax(products[]Product) (Product, Product) {
+	// Initial guesses
+	min_product := products[0]
+	max_product := products[len(products)-1]
+	// Update initial guesses
+	for _, product := range(products) {
+		if product.Value < min_product.Value {
+			min_product = product
+		}
+		if product.Value > max_product.Value {
+			max_product = product 
+		}
 	}
-
-	fmt.Println("min_product:", min_product)
-	fmt.Println("max_product:", max_product)
-	fmt.Println("===========================================================")
-	return min_product, max_product, nil
+	return min_product, max_product
+}
+// Main function called from test cases
+func Products(fmin, fmax int) (Product, Product, error) {
+	// Error handling
+	if fmax <= fmin {
+		return Product{}, Product{}, fmt.Errorf("fmin > fmax")
+	}
+	// Get all Palindrome Products and Factorizations
+	palindrome_products := getProducts(fmin, fmax)
+	if len(palindrome_products) != 0 {
+		min_product, max_product := findMinAndMax(palindrome_products)
+		return min_product, max_product, nil
+	} else {
+		return Product{}, Product{}, fmt.Errorf("no palindromes")
+	}
 }
