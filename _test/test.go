@@ -31,29 +31,48 @@ func calculateFromBinary(value, n int) int {
 	return value * int(math.Pow(float64(2), float64(n)))
 }
 
+// Reverse a slice
+func reverseSlice(input []byte) []byte {
+	output := make([]byte, 0)
+	for i:=len(input)-1; i>=0; i-- {
+		output = append(output, input[i])
+	}
+	return output
+}
 
 func main() {
-	input := []uint32{137}
+	input := []uint32{0x4000}
 	fmt.Println(input) // Print decimal value
 	fmt.Println(fmt.Sprintf("%08b", input)) // Print binary value
+	// 1 0000000 0000000
 
-	fmt.Println(getMax1Bit(input[0])) // 7
+	seven_bit := make([]byte, 0)
+	var c, nth, num int
 
-	var num int
-
-	for i:=0; i<=7; i++ {
-		fmt.Println(i, ":", getNthBit(input[0], uint32(i))) // zero-index
-		num += calculateFromBinary(getNthBit(input[0], uint32(i)), i)
-		fmt.Println("num is:", num)
+	for i:=0; i<=getMax1Bit(input[0]); i++ {
+		nth = getNthBit(input[0], uint32(i))
+		num += calculateFromBinary(nth, c)
+		c++
+		// 7th bit, reset
+		if c == 7 { 
+			seven_bit = append(seven_bit, byte(num))
+			c = 0
+			num = 0
+		} 
+		// Last bit - append to slice
+		if i == getMax1Bit(input[0]){ 
+			seven_bit = append(seven_bit, byte(num))
+		}
 	}
+	seven_bit = reverseSlice(seven_bit)
 
-	
-
-	// result := make([]uint32, 0)
-
-
-
-	
-
-
+	// Add MSB
+	for i:=0; i<len(seven_bit); i++ {
+		if i != len(seven_bit)-1 { // Not last bit - set MSB = 1
+			seven_bit[i] += byte(calculateFromBinary(1, 7))
+		}
+		fmt.Println(fmt.Sprintf("%x", seven_bit[i]))
+	}
+	// Print hex value
+	fmt.Println(fmt.Sprintf("%x", seven_bit)) // Print hex value
 }
