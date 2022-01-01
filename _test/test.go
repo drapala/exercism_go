@@ -2,104 +2,58 @@ package main
 
 import (
 	"fmt"
-	"strconv"
+	"math"
 )
 
-type Product struct {
-	Value   int
-	Factors [][2]int // An array of 2-length-arrays of ints
-}
-
-func ProductIndex(value int, products []Product) int {
-	for i, product := range products {
-		if product.Value == value {
-			return i
+func getMax1Bit(val uint32) int {
+	for i:=31; i>=0; i-- { // Start from left
+		if getNthBit(val, uint32(i)) == 1 { // 0 index
+			return i // Return first bit that has a 1 - zero-index
 		}
 	}
 	return -1
 }
 
-func FactorInArray(factors [][2]int, num1, num2 int) bool{
-	for _, factor := range factors {
-		if [2]int{num2, num1} == factor { // If factor is in array, it must be the other permutation
-			return true
-		}
-	}
-	return false
+func getNthBit(val, n uint32) int {
+    // 1. reverse the golang endian
+    nthBit := n
+    // 2. move the nth bit to the first position
+    movedVal := val >> nthBit
+    // 3. mask the value, selecting only this first bit
+    maskedValue := movedVal & 1
+    return int(maskedValue)
+    // can be shortened like so
+    // return (val >> (32-n)) & 1
 }
 
-func getProducts(fmin, fmax int) []Product {
-	products := make([]Product, 0)
-
-	var num1, num2 int
-
-	for num1 = fmin; num1 <= fmax; num1++ {
-		for num2 = fmin; num2 <= fmax; num2++ {
-			value := num1 * num2
-			// 1. If product already exists in array, append factor to it
-			// 	1a. Append factor only if it is unique - considering flipped permutations
-			// 2. If product is new, append it to array
-			existing_index := ProductIndex(value, products)
-			if existing_index != -1 { // Since product already exists in array, append factor to it
-				if !FactorInArray(products[existing_index].Factors, num1, num2) { // Check if unique
-					products[existing_index].Factors = append(products[existing_index].Factors, [2]int{num1, num2})
-				}
-			} else { // Product is new,  append it to array
-				product := Product{
-					Value:   value,
-					Factors: [][2]int{{num1, num2}},
-				}
-				products = append(products, product)
-			}
-		}
-	}
-	return products
+func calculateFromBinary(value, n int) int {
+	// Calculate 2 to the power of n
+	return value * int(math.Pow(float64(2), float64(n)))
 }
 
-func reverseString(input string) string {
-	var output string
-	for i := len(input) - 1; i >= 0; i-- {
-		output += string(input[i])
-	}
-	return output
-}
-
-func isPalindrome(value int) bool {
-	if value < 10 { // Single digit is automatically palindrome
-		return true
-	}
-	value_string := strconv.Itoa(value) // String representation
-	if value_string == reverseString(value_string) { // Compare with reverse
-		return true
-	}
-	return false
-}
-
-func getPalindromeProducts(products []Product) []Product{
-	palindrome_products := make([]Product, 0)
-	for _, product := range products {
-		if isPalindrome(product.Value) {
-			palindrome_products = append(palindrome_products, product)
-		}
-	}
-	return palindrome_products	
-}
 
 func main() {
-	fmin := 10
-	fmax := 99
-	products := getProducts(fmin, fmax)
-	fmt.Println("products:", products)
+	input := []uint32{137}
+	fmt.Println(input) // Print decimal value
+	fmt.Println(fmt.Sprintf("%08b", input)) // Print binary value
 
-	palindrome_products := getPalindromeProducts(products)
+	fmt.Println(getMax1Bit(input[0])) // 7
 
-	fmt.Println("palindrome products:", palindrome_products)
+	var num int
 
-	var min_product, max_product Product
-	if len(palindrome_products) != 0 {
-		min_product = palindrome_products[0]
-		max_product = palindrome_products[len(palindrome_products)-1]
+	for i:=0; i<=7; i++ {
+		fmt.Println(i, ":", getNthBit(input[0], uint32(i))) // zero-index
+		num += calculateFromBinary(getNthBit(input[0], uint32(i)), i)
+		fmt.Println("num is:", num)
 	}
-	fmt.Println("min palindrome", min_product)
-	fmt.Println("max palindrome", max_product)
+
+	
+
+	// result := make([]uint32, 0)
+
+
+
+	
+
+
 }
