@@ -1,18 +1,17 @@
 package binarysearch
 
-import "fmt"
-
 func SearchInts(list []int, key int) int {
-	fmt.Println("list:", list, "key:", key)
-
-	if list == nil { // Called on empty list - key not present
-		return -1
+	var l, r int = 0, len(list) - 1
+	// Loop until l and r meet
+	for l <= r {
+		var m int = (l + r) / 2
+		if list[m] < key {
+			l = m + 1 // Go to right half
+		} else if list[m] > key {
+			r = m - 1 // Go to left half
+		} else {
+			return m // Found
+		}
 	}
-	var half_index int = len(list) / 2
-	if key > list[half_index] {
-		return SearchInts(list[half_index:], key)
-	} else if key < list[half_index] {
-		return SearchInts(list[:half_index], key)
-	}
-	return half_index
+	return -1 // Not found
 }
