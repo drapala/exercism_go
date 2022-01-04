@@ -1,6 +1,8 @@
 package linkedlist
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type List struct {
 	head *Node
@@ -81,40 +83,81 @@ func (n *Node) Prev() *Node {
 }
 
 func (l *List) PushFront(v interface{}) {
-	fmt.Println("value:", v)
 	// Create a newNode with value
 	newNode := Node{Val: v}
-	fmt.Println("newNode 1:", newNode)
 	// Set newNode.next = l.head
 	newNode.next = l.head
-	fmt.Println("head 1:", l.head)
-	fmt.Println("newNode 2:", newNode)
 	// Set newNode.prev = nil
 	newNode.prev = nil
 	// Set l.head.prev = &newNode
 	if l.head == nil { // empty list, append in
+		// Update head
 		l.head = &newNode
-	} else { // Update previous to point to newNode
+		// Update tail
+		l.tail = &newNode
+	} else { // Update previous head to point to newNode and update head
 		l.head.prev = &newNode
 		l.head = &newNode
-	}
-	fmt.Println("head 2:", l.head)
-	if l.head.next != nil {
-		fmt.Println("NodeAfter val:", l.head.next.Val)
-	}
-	fmt.Println("next!")
+	}	
 }
 
 func (l *List) PushBack(v interface{}) {
-	panic("Please implement the PushBack function")
+	// Create a newNode with value
+	newNode := Node{Val: v}
+	// Set newNode.prev = l.tail
+	newNode.prev = l.tail
+	// Set newNode.next = nil
+	newNode.next = nil
+	// Set l.tail.next = &newNode
+	if l.tail == nil { // empty list, append in
+		// Update head
+		l.head = &newNode
+		// Update tail
+		l.tail = &newNode
+	} else { // Update previous tail to point to newNode and update tail
+		l.tail.next = &newNode
+		l.tail = &newNode
+	}	
 }
 
 func (l *List) PopFront() (interface{}, error) {
-	panic("Please implement the PopFront function")
+	// Error handling
+	if l.head == nil {
+		return nil, ErrEmptyList
+	}
+	// Return value
+	v := l.head.Val
+
+	// Pop from front
+	l.head = l.head.next
+
+	if l.head != nil {
+		l.head.prev = nil
+	} else { // If list is now empty
+		l.tail = nil // Update tail
+	}
+
+	return v, nil
 }
 
 func (l *List) PopBack() (interface{}, error) {
-	panic("Please implement the PopBack function")
+	// Error handling
+	if l.tail == nil {
+		return nil, ErrEmptyList
+	}
+	// Return value
+	v := l.tail.Val
+
+	// Pop from back
+	l.tail = l.tail.prev
+
+	if l.tail != nil {
+		l.tail.next = nil
+	} else { // If list is now empty
+		l.head = nil // Update head
+	}
+
+	return v, nil
 }
 
 func (l *List) Reverse() {
