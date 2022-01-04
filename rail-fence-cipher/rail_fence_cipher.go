@@ -1,6 +1,41 @@
 package railfence
 
-import "fmt"
+// Creates ZigZag pattern in a slice used for decoding
+func createZigZag(rails int, msgLength int) [][]string {
+	rail_slice := make([][]string, 0)
+
+	// initialize and append rails of appropriate lengths
+	for i := 0; i < rails; i++ {
+		rail := make([]string, msgLength)
+		rail_slice = append(rail_slice, rail)
+	}
+
+	var forward bool = true // Tracking direction
+	var i int               // Tracking rail number
+
+	for n := 0; n < msgLength; n++ {
+		rail_slice[i][n] = "?"
+		railZigger(&i, &forward, rails)
+	}
+	return rail_slice
+}
+
+// railZigger implements the novel rail switching logic
+// Is a function to avoid code duplication
+func railZigger(i *int, forward *bool, rails int) {
+	// Shift i
+	if *forward {
+		*i++
+	} else {
+		*i--
+	}
+	// Change direction at end of rails
+	if *i == rails-1 {
+		*forward = false
+	} else if *i == 0 {
+		*forward = true
+	}
+}
 
 func Encode(message string, rails int) string {
 	var result string                   // Return value
@@ -9,18 +44,7 @@ func Encode(message string, rails int) string {
 	rail_slice := make([]string, rails) // Each entry of slice represents number of rails
 	for _, c := range message {         // Loop per character
 		rail_slice[i] += string(c) // Append to rail
-		// Shift i
-		if forward {
-			i++
-		} else {
-			i--
-		}
-		// Change direction at end of rails
-		if i == rails-1 {
-			forward = false
-		} else if i == 0 {
-			forward = true
-		}
+		railZigger(&i, &forward, rails)
 	}
 	for _, c := range rail_slice { // Form message
 		result += c
@@ -28,79 +52,27 @@ func Encode(message string, rails int) string {
 	return result
 }
 
-func insertSpaces (in string, num int) string {
-	for i := 1; i <= num; i++ {
-		in += " "
-	}
-	return in
-}
-
 func Decode(message string, rails int) string {
-	// Determine spaces per rail
-	spaces := make([]int, rails-1)
-	var railspace int = 1
-	for i := 0; i < len(spaces); i++ {
-		spaces[i] = railspace
-		railspace += 2
-	}
-	fmt.Println("spaces:", spaces)
+	rail_slice := createZigZag(rails, len(message))
 
-	rail_slice := make([]string, rails)
-
-	// Insert leading spaces per rail
-	for i := 0; i < rails; i++ {
-		rail_slice[i] = insertSpaces(rail_slice[i], i)
-		//rail_slice[i] += "_" // Remove!
-	}
-	
-	var r int // For tracking rail number
-
-	for i := 0; i < len(message); i++{ // Loop over messages to insert
-		rail_slice[r] += string(message[i])
-		
-		// Insert spaces appropriately to rail as per "spaces"
-		switch r {
-		case 0:
-			rail_slice[r] = insertSpaces(rail_slice[r], spaces[rails-2])
-		case rails-1:
-			rail_slice[r] = insertSpaces(rail_slice[r], spaces[rails-2])
-		default:
-			rail_slice[r] = insertSpaces(rail_slice[r], spaces[(rails - 2) - r])
-		}
-		// If rail is == message length, increment railnum
-		if len(rail_slice[r]) >= len(message) {
-			r++
+	// // Replace "?" per rail with message
+	var i int // Message index tracker
+	for _, rail := range rail_slice {
+		// Loop over rail
+		for n, c := range rail {
+			if c == string('?') {
+				rail[n] = string(message[i])
+				i++
+			}
 		}
 	}
-	// Print railslice
-	for _, c := range(rail_slice) {
-		fmt.Println(c)
+	// Get back the string
+	var result string       // Return value
+	i = 0                   // Tracking rail number
+	var forward bool = true // Tracking direction
+	for x := 0; x < len(message); x++ {
+		result += rail_slice[i][x]
+		railZigger(&i, &forward, rails)
 	}
-
-
-
-	// Form string to return
-	var result string
-	r = 0
-	var forward bool = true             // Tracking direction
-	// Gather decoded string
-	for i:=0; i < len(message); i++ {
-		result += string(rail_slice[r][i])
-		// Shift i
-		if forward {
-			r++
-		} else {
-			r--
-		}
-		// Change direction at end of rails
-		if r == rails-1 {
-			forward = false
-		} else if r == 0 {
-			forward = true
-		}
-	}
-
-	fmt.Println("result:", result)
-
 	return result
 }
