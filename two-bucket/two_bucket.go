@@ -75,9 +75,9 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 		solutionPath = append(solutionPath, bucketKey{0, 0}) // Add in the initial state so we do not revisit
 
 		if startBucket == "one" { // Force filling the bucket
-			possible = bucketSolver(startBucket, sizeBucketOne, sizeBucketOne, 0, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
+			possible = bucketSolver(startBucket, sizeBucketOne, sizeBucketOne, 0, sizeBucketTwo, goalAmount, solutionPath, &solutionStack)
 		} else {
-			possible = bucketSolver(startBucket, 0, sizeBucketOne, sizeBucketTwo, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
+			possible = bucketSolver(startBucket, 0, sizeBucketOne, sizeBucketTwo, sizeBucketTwo, goalAmount, solutionPath, &solutionStack)
 		}
 	}
 	fmt.Println("================")
@@ -132,13 +132,12 @@ func visited(key bucketKey, solutionPath []bucketKey) bool {
 	return false
 }
 
-func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
+func pathInStack(solutionPath []bucketKey, solutionStack *[][]bucketKey) bool {
 	var found bool = true // Start assuming true
 
 	for _, path := range *solutionStack {
-
 		for i, key := range path { // Go over each bucketkey in this path from the Stack
-			if key != (*solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
+			if key != (solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
 				found = false
 			}
 		}
@@ -163,9 +162,9 @@ func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 
 // OUTPUTS:
 // True if solution is possible, otherwise False.
-func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
-	fmt.Println("Path now:", *solutionPath)
-	fmt.Println("Node Proposed:", amt1, ",", amt2)
+func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath []bucketKey, solutionStack *[][]bucketKey) bool {
+	fmt.Println("Path now:", solutionPath)
+	// fmt.Println("Node Proposed:", amt1, ",", amt2)
 
 	// Check if starting bucket is empty and other is full - invalid state - even if it's the goal
 	if (startBucket == "one") && (amt1 == 0) && (amt2 == size2) {
@@ -177,20 +176,24 @@ func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, soluti
 	// Check if:
 	// 1. the goal is already reached and,
 	// 2. we haven't visited this key state yet
-	if ((amt1 == goal) || (amt2 == goal)) && (!visited(bucketKey{amt1, amt2}, *solutionPath)) {
+	if ((amt1 == goal) || (amt2 == goal)) && (!visited(bucketKey{amt1, amt2}, solutionPath)) {
 		// Add final step to solution Path
-		*solutionPath = append(*solutionPath, bucketKey{amt1, amt2})
+		solutionPath = append(solutionPath, bucketKey{amt1, amt2})
 
-		fmt.Println("Reached a solution:", *solutionPath)
+		fmt.Println("Reached a solution:", solutionPath)
 		fmt.Println("Current Solution Stack:", *solutionStack)
 
 		// Add solutionPath to solutionStack only if it is not already in the stack
+
+		fmt.Println("outside")
 		if !pathInStack(solutionPath, solutionStack) {
+			fmt.Println("in1")
 			// Add solutionPath to solutionStack
 			fmt.Println("Unique solution found - adding")
-			*solutionStack = append(*solutionStack, *solutionPath)
+			*solutionStack = append(*solutionStack, solutionPath)
 			return true
 		} else {
+			fmt.Println("in2")
 			// If solutionPath is already in the stack, then we have reached a duplicate solution
 			fmt.Println("Duplicate solution found - skipping")
 			return false
@@ -199,9 +202,9 @@ func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, soluti
 
 	// Checks if we have already visited this state
 	// If not - proceed
-	if !visited(bucketKey{amt1, amt2}, *solutionPath) {
+	if !visited(bucketKey{amt1, amt2}, solutionPath) {
 		// Add to solution Path
-		*solutionPath = append(*solutionPath, bucketKey{amt1, amt2})
+		solutionPath = append(solutionPath, bucketKey{amt1, amt2})
 
 		// For inter-bucket transfers - e.g. for Bucket 1 as giver
 		// amt1: amount of water in giver
