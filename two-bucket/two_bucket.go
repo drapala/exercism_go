@@ -68,10 +68,7 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 
 	// Add in the initial state so we do not revisit
 	solutionPath = append(solutionPath, bucketKey{0, 0})
-	moves++
 
-	fmt.Println("================")
-	fmt.Println("B1, B2")
 	if startBucket == "one" {
 		possible = bucketSolver(startBucket, sizeBucketOne, sizeBucketOne, 0, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
 	} else {
@@ -119,6 +116,28 @@ func visited(key bucketKey, solutionPath []bucketKey) bool {
 	return false
 }
 
+func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
+	// solutionStack: [[{0 0} {2 0} {0 2} {2 2} {1 3}]]
+	// solutionPath: [{0 0} {2 0} {0 2} {2 2} {1 3}]
+	var found bool = true // Start assuming true
+
+	for _, path := range *solutionStack {
+		if len(path) == len(*solutionPath) { // Lengths are same - continue searching
+			for i, key := range path { // Go over each bucketkey in this path from the Stack
+				if key != (*solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
+					found = false
+				}
+			}
+			// If found is still true after iterating across, then we found a path that is the same as the proposed solution
+			if found {
+				return true
+			}
+		}
+		found = true // Reset found to true for path in stack
+	}
+	return false
+}
+
 // Recursive function which prints the intermediate steps to reach the final
 // solution and return boolean value. Only returns false if all possible permutations are exhausted
 
@@ -133,13 +152,17 @@ func visited(key bucketKey, solutionPath []bucketKey) bool {
 func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 	// Check if the goal is already reached
 	if (amt1 == goal) || (amt2 == goal) {
-		// Add step to solution Path
+		// Add final step to solution Path
 		*solutionPath = append(*solutionPath, bucketKey{amt1, amt2})
 
-		// Add solutionPath to solutionStack
-		*solutionStack = append(*solutionStack, *solutionPath)
-
-		fmt.Println(amt1, ",", amt2, " | Done!")
+		// Add solutionPath to solutionStack only if it is not already in the stack
+		if !pathInStack(solutionPath, solutionStack) {
+			// Add solutionPath to solutionStack
+			*solutionStack = append(*solutionStack, *solutionPath)
+		} else {
+			// If solutionPath is already in the stack, then we have found a duplicate solution
+			return false
+		}
 		return true
 	}
 	// Check if starting bucket is empty and other is full - invalid state
@@ -152,8 +175,6 @@ func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, soluti
 	// Checks if we have already visited this state
 	// If not - proceed
 	if !visited(bucketKey{amt1, amt2}, *solutionPath) {
-		fmt.Println(amt1, ",", amt2)
-
 		// Add to solution Path
 		*solutionPath = append(*solutionPath, bucketKey{amt1, amt2})
 
