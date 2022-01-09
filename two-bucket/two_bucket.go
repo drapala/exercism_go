@@ -165,6 +165,7 @@ func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 // True if solution is possible, otherwise False.
 func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 	fmt.Println("Path now:", *solutionPath)
+	fmt.Println("Node Proposed:", amt1, ",", amt2)
 
 	// Check if starting bucket is empty and other is full - invalid state - even if it's the goal
 	if (startBucket == "one") && (amt1 == 0) && (amt2 == size2) {
