@@ -136,17 +136,17 @@ func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 	var found bool = true // Start assuming true
 
 	for _, path := range *solutionStack {
-		if len(path) == len(*solutionPath) { // Lengths are same - continue searching
-			for i, key := range path { // Go over each bucketkey in this path from the Stack
-				if key != (*solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
-					found = false
-				}
-			}
-			// If found is still true after iterating across, then we found a path that is the same as the proposed solution
-			if found {
-				return true
+
+		for i, key := range path { // Go over each bucketkey in this path from the Stack
+			if key != (*solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
+				found = false
 			}
 		}
+		// If found is still true after iterating across the path in the Stack, then we found a path that is the same as the proposed solution up until the last bucketKey
+		if found {
+			return true
+		}
+
 		found = true // Reset found to true for path in stack
 	}
 	return false
@@ -164,6 +164,8 @@ func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 // OUTPUTS:
 // True if solution is possible, otherwise False.
 func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
+	fmt.Println("Path now:", *solutionPath)
+
 	// Check if starting bucket is empty and other is full - invalid state - even if it's the goal
 	if (startBucket == "one") && (amt1 == 0) && (amt2 == size2) {
 		return false
@@ -178,17 +180,18 @@ func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, soluti
 		// Add final step to solution Path
 		*solutionPath = append(*solutionPath, bucketKey{amt1, amt2})
 
-		fmt.Println("Reached a solution")
+		fmt.Println("Reached a solution:", *solutionPath)
 		fmt.Println("Current Solution Stack:", *solutionStack)
-		fmt.Println("Proposed Solution Path:", *solutionPath)
 
 		// Add solutionPath to solutionStack only if it is not already in the stack
 		if !pathInStack(solutionPath, solutionStack) {
 			// Add solutionPath to solutionStack
+			fmt.Println("Unique solution found - adding")
 			*solutionStack = append(*solutionStack, *solutionPath)
 			return true
 		} else {
 			// If solutionPath is already in the stack, then we have reached a duplicate solution
+			fmt.Println("Duplicate solution found - skipping")
 			return false
 		}
 	}
