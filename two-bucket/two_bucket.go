@@ -42,11 +42,13 @@ func MinInt(a, b int) int {
 }
 
 func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (string, int, int, error) {
-	// Input
-	fmt.Println("Size of bucket one:", sizeBucketOne) // the size of bucket one
-	fmt.Println("Size of bucket two:", sizeBucketTwo) // the size of bucket two
-	fmt.Println("Goal amount:", goalAmount)           // the desired number of liters to reach
-	fmt.Println("Start bucket:", startBucket)         // which bucket to fill first - "one" or "two"
+	// Error handling
+	if sizeBucketOne <= 0 || sizeBucketTwo <= 0 || goalAmount <= 0 {
+		return "", 0, 0, fmt.Errorf("invalid bucket sizes")
+	}
+	if (startBucket != "one") && (startBucket != "two") {
+		return "", 0, 0, fmt.Errorf("invalid start bucket name")
+	}
 
 	// Output
 	var goalBucket string // which bucket should end up with the desired number of liters
@@ -65,12 +67,8 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 	var solutionPath []bucketKey
 	solutionStack := make([][]bucketKey, 0) // stack of Solutions
 	var possible bool = true
-	var trial int = 0
 
 	for possible { // While possible is true, keep iterating
-		trial++
-		fmt.Printf("\nTrial: %d\n", trial)
-
 		solutionPath = make([]bucketKey, 0)                  // Initialize solutionPath
 		solutionPath = append(solutionPath, bucketKey{0, 0}) // Add in the initial state so we do not revisit
 
@@ -80,18 +78,18 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 			possible = bucketSolver(startBucket, 0, sizeBucketOne, sizeBucketTwo, sizeBucketTwo, goalAmount, solutionPath, &solutionStack)
 		}
 	}
-	fmt.Println("================")
-	fmt.Println("Solution Stack:", solutionStack)
+
+	// If no solution in stack, return error
+	if len(solutionStack) == 0 {
+		e = fmt.Errorf("no solution found")
+		return "", 0, 0, e
+	}
+
 	// Find the smallest solution in the stack
 	solutionPath = smallestPathInStack(&solutionStack)
-	fmt.Println("Smallest Path:", solutionPath)
-	fmt.Println("================")
-
 	sol1 := solutionPath[len(solutionPath)-1].bucket1
 	sol2 := solutionPath[len(solutionPath)-1].bucket2
 	moves = len(solutionPath) - 1
-
-	fmt.Println("Solution: ", sol1, ",", sol2)
 
 	if sol1 == goalAmount {
 		goalBucket = "one"
@@ -100,13 +98,6 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 		goalBucket = "two"
 		otherBucket = sol1
 	}
-
-	// ======================================================================
-	// Validation
-	fmt.Println("Goal bucket:", goalBucket)
-	fmt.Println("# of Moves:", moves)
-	fmt.Println("Other bucket:", otherBucket)
-	fmt.Println("Error:", e)
 
 	return goalBucket, moves, otherBucket, e
 }
@@ -137,15 +128,17 @@ func pathInStack(solutionPath []bucketKey, solutionStack *[][]bucketKey) bool {
 
 	for _, path := range *solutionStack {
 		for i, key := range path { // Go over each bucketkey in this path from the Stack
-			if key != (solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
-				found = false
+			// Check we are not out of bounds for solutionPath
+			if !(i >= len(solutionPath)) {
+				if key != (solutionPath)[i] { // If this bucketKey is NOT the same as the one in the proposed solution at same index
+					found = false
+				}
 			}
 		}
 		// If found is still true after iterating across the path in the Stack, then we found a path that is the same as the proposed solution up until the last bucketKey
 		if found {
 			return true
 		}
-
 		found = true // Reset found to true for path in stack
 	}
 	return false
@@ -163,9 +156,6 @@ func pathInStack(solutionPath []bucketKey, solutionStack *[][]bucketKey) bool {
 // OUTPUTS:
 // True if solution is possible, otherwise False.
 func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath []bucketKey, solutionStack *[][]bucketKey) bool {
-	fmt.Println("Path now:", solutionPath)
-	// fmt.Println("Node Proposed:", amt1, ",", amt2)
-
 	// Check if starting bucket is empty and other is full - invalid state - even if it's the goal
 	if (startBucket == "one") && (amt1 == 0) && (amt2 == size2) {
 		return false
@@ -179,23 +169,13 @@ func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, soluti
 	if ((amt1 == goal) || (amt2 == goal)) && (!visited(bucketKey{amt1, amt2}, solutionPath)) {
 		// Add final step to solution Path
 		solutionPath = append(solutionPath, bucketKey{amt1, amt2})
-
-		fmt.Println("Reached a solution:", solutionPath)
-		fmt.Println("Current Solution Stack:", *solutionStack)
-
 		// Add solutionPath to solutionStack only if it is not already in the stack
-
-		fmt.Println("outside")
 		if !pathInStack(solutionPath, solutionStack) {
-			fmt.Println("in1")
 			// Add solutionPath to solutionStack
-			fmt.Println("Unique solution found - adding")
 			*solutionStack = append(*solutionStack, solutionPath)
 			return true
 		} else {
-			fmt.Println("in2")
 			// If solutionPath is already in the stack, then we have reached a duplicate solution
-			fmt.Println("Duplicate solution found - skipping")
 			return false
 		}
 	}
