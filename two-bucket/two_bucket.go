@@ -102,6 +102,7 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 	return goalBucket, moves, otherBucket, e
 }
 
+// Find the smallest path in the stack - most optimal solution
 func smallestPathInStack(solutionStack *[][]bucketKey) []bucketKey {
 	var smallestPath []bucketKey = (*solutionStack)[0]
 	var smallestPathLength int = len(smallestPath)
@@ -114,6 +115,7 @@ func smallestPathInStack(solutionStack *[][]bucketKey) []bucketKey {
 	return smallestPath
 }
 
+// Check if node is already visited
 func visited(key bucketKey, solutionPath []bucketKey) bool {
 	for _, v := range solutionPath {
 		if v == key {
@@ -123,6 +125,7 @@ func visited(key bucketKey, solutionPath []bucketKey) bool {
 	return false
 }
 
+// Check if proposed solution has already been traversed in a solution contained in the stack
 func pathInStack(solutionPath []bucketKey, solutionStack *[][]bucketKey) bool {
 	var found bool = true // Start assuming true
 
