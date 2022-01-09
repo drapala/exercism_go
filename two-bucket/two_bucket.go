@@ -62,24 +62,31 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 	// To avoid infinite recursion, we use a map to store the results of
 	// previous calls.
 	// ======================================================================
-	solutionPath := make([]bucketKey, 0)    // solution path
+	var solutionPath []bucketKey
 	solutionStack := make([][]bucketKey, 0) // stack of Solutions
-	var possible bool
+	var possible bool = true
+	var trial int = 0
 
-	// Add in the initial state so we do not revisit
-	solutionPath = append(solutionPath, bucketKey{0, 0})
+	for possible { // While possible is true, keep iterating
+		trial++
+		fmt.Printf("\nTrial: %d\n", trial)
 
-	if startBucket == "one" {
-		possible = bucketSolver(startBucket, sizeBucketOne, sizeBucketOne, 0, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
-	} else {
-		possible = bucketSolver(startBucket, 0, sizeBucketOne, sizeBucketTwo, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
+		solutionPath = make([]bucketKey, 0)                  // Initialize solutionPath
+		solutionPath = append(solutionPath, bucketKey{0, 0}) // Add in the initial state so we do not revisit
+
+		if startBucket == "one" { // Force filling the bucket
+			possible = bucketSolver(startBucket, sizeBucketOne, sizeBucketOne, 0, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
+		} else {
+			possible = bucketSolver(startBucket, 0, sizeBucketOne, sizeBucketTwo, sizeBucketTwo, goalAmount, &solutionPath, &solutionStack)
+		}
 	}
 	fmt.Println("================")
 	fmt.Println("Solution Stack:", solutionStack)
-	fmt.Println("Solution Path:", solutionPath)
+	// Find the smallest solution in the stack
+	solutionPath = smallestPathInStack(&solutionStack)
+	fmt.Println("Smallest Path:", solutionPath)
 	fmt.Println("================")
 
-	// ======================================================================
 	sol1 := solutionPath[len(solutionPath)-1].bucket1
 	sol2 := solutionPath[len(solutionPath)-1].bucket2
 	moves = len(solutionPath) - 1
@@ -94,9 +101,6 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 		otherBucket = sol1
 	}
 
-	if !possible {
-		e = fmt.Errorf("no solution found")
-	}
 	// ======================================================================
 	// Validation
 	fmt.Println("Goal bucket:", goalBucket)
@@ -105,6 +109,18 @@ func Solve(sizeBucketOne, sizeBucketTwo, goalAmount int, startBucket string) (st
 	fmt.Println("Error:", e)
 
 	return goalBucket, moves, otherBucket, e
+}
+
+func smallestPathInStack(solutionStack *[][]bucketKey) []bucketKey {
+	var smallestPath []bucketKey = (*solutionStack)[0]
+	var smallestPathLength int = len(smallestPath)
+	for _, path := range *solutionStack {
+		if len(path) < smallestPathLength {
+			smallestPath = path // Update smallest path
+			smallestPathLength = len(path)
+		}
+	}
+	return smallestPath
 }
 
 func visited(key bucketKey, solutionPath []bucketKey) bool {
@@ -117,8 +133,6 @@ func visited(key bucketKey, solutionPath []bucketKey) bool {
 }
 
 func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
-	// solutionStack: [[{0 0} {2 0} {0 2} {2 2} {1 3}]]
-	// solutionPath: [{0 0} {2 0} {0 2} {2 2} {1 3}]
 	var found bool = true // Start assuming true
 
 	for _, path := range *solutionStack {
@@ -150,26 +164,33 @@ func pathInStack(solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
 // OUTPUTS:
 // True if solution is possible, otherwise False.
 func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, solutionPath *[]bucketKey, solutionStack *[][]bucketKey) bool {
-	// Check if the goal is already reached
-	if (amt1 == goal) || (amt2 == goal) {
+	// Check if starting bucket is empty and other is full - invalid state - even if it's the goal
+	if (startBucket == "one") && (amt1 == 0) && (amt2 == size2) {
+		return false
+	} else if (startBucket == "two") && (amt2 == 0) && (amt1 == size1) {
+		return false
+	}
+
+	// Check if:
+	// 1. the goal is already reached and,
+	// 2. we haven't visited this key state yet
+	if ((amt1 == goal) || (amt2 == goal)) && (!visited(bucketKey{amt1, amt2}, *solutionPath)) {
 		// Add final step to solution Path
 		*solutionPath = append(*solutionPath, bucketKey{amt1, amt2})
+
+		fmt.Println("Reached a solution")
+		fmt.Println("Current Solution Stack:", *solutionStack)
+		fmt.Println("Proposed Solution Path:", *solutionPath)
 
 		// Add solutionPath to solutionStack only if it is not already in the stack
 		if !pathInStack(solutionPath, solutionStack) {
 			// Add solutionPath to solutionStack
 			*solutionStack = append(*solutionStack, *solutionPath)
+			return true
 		} else {
-			// If solutionPath is already in the stack, then we have found a duplicate solution
+			// If solutionPath is already in the stack, then we have reached a duplicate solution
 			return false
 		}
-		return true
-	}
-	// Check if starting bucket is empty and other is full - invalid state
-	if (startBucket == "one") && (amt1 == 0) && (amt2 == size2) {
-		return false
-	} else if (startBucket == "two") && (amt2 == 0) && (amt1 == size1) {
-		return false
 	}
 
 	// Checks if we have already visited this state
@@ -186,6 +207,7 @@ func bucketSolver(startBucket string, amt1, size1, amt2, size2, goal int, soluti
 		from2to1 := MinInt(amt2, size1-amt1)
 
 		// Checks all 6 actions recursively and see if we can reach the goal down any path via ||
+		// OR should mean that if there is a single path that can reach the goal, then we return true
 		return (
 		// ACTION 1: First bucket to second bucket
 		bucketSolver(startBucket, amt1-from1to2, size1, amt2+from1to2, size2, goal, solutionPath, solutionStack) ||
