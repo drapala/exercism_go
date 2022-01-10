@@ -21,6 +21,8 @@ type gardenTest struct {
 }
 
 var tests = []gardenTest{
+	test6, // out of order names test
+	test5, // full garden test
 	{1, `
 RC
 GG`, []string{"Alice"}, true, []lookup{
@@ -42,9 +44,6 @@ VVCCGG`, []string{"Alice", "Bob", "Charlie"}, true, []lookup{
 		{"Bob", []string{"clover", "clover", "clover", "clover"}, true},
 		{"Charlie", []string{"grass", "grass", "grass", "grass"}, true},
 	}},
-	test5, // full garden test
-	test6, // out of order names test
-
 	// failure tests
 	{7, "RC\nGG", []string{"Alice"}, false, nil}, // wrong diagram format
 	{8, `
