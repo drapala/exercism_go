@@ -104,8 +104,4 @@ exercism submit XXXX.go # Submit
 | Darts                    | `Completed`   | Write a function that returns the earned points in a single toss of a Darts game                                                                                                                                                                                                                                      |
 | Acronym                  | `Completed`   | Convert a long phrase to its acronym                                                                                                                                                                                                                                                                                  |
 | List Ops                 | `Completed`   | Implement basic list operations                                                                                                                                                                                                                                                                                       |
-| Scale Generator          | `Not started` | Generate musical scales, given a starting note and a set of intervals.                                                                                                                                                                                                                                                |
-
-## Books
-
-[Downloads](https://b-ok.cc/)
+| Scale Generator          | `Completed` | Generate musical scales, given a starting note and a set of intervals.                                                                                                                                                                                                                                                |
