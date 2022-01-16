@@ -10,6 +10,17 @@ var testCases = []struct {
 	expected    int
 }{
 	{
+		description: "rectangles can be of different sizes",
+		input: []string{
+			"+------+----+",
+			"|      |    |",
+			"+---+--+    |",
+			"|   |       |",
+			"+---+-------+",
+		},
+		expected: 3,
+	},
+	{
 		description: "no rows",
 		input:       []string{},
 		expected:    0,
@@ -85,26 +96,18 @@ var testCases = []struct {
 		expected: 1,
 	},
 	{
-		description: "only complete rectangles are counted",
+		description: "large input with many rectangles",
 		input: []string{
-			"  +-+",
-			"    |",
-			"+-+-+",
-			"| | -",
-			"+-+-+",
-		},
-		expected: 1,
-	},
-	{
-		description: "rectangles can be of different sizes",
-		input: []string{
-			"+------+----+",
-			"|      |    |",
+			"+---+--+----+",
+			"|   +--+----+",
 			"+---+--+    |",
-			"|   |       |",
-			"+---+-------+",
+			"|   +--+----+",
+			"+---+--+--+-+",
+			"+---+--+--+-+",
+			"+------+  | |",
+			"          +-+",
 		},
-		expected: 3,
+		expected: 60,
 	},
 	{
 		description: "corner is required for a rectangle to be complete",
@@ -118,17 +121,14 @@ var testCases = []struct {
 		expected: 2,
 	},
 	{
-		description: "large input with many rectangles",
+		description: "only complete rectangles are counted",
 		input: []string{
-			"+---+--+----+",
-			"|   +--+----+",
-			"+---+--+    |",
-			"|   +--+----+",
-			"+---+--+--+-+",
-			"+---+--+--+-+",
-			"+------+  | |",
-			"          +-+",
+			"  +-+",
+			"    |",
+			"+-+-+",
+			"| | -",
+			"+-+-+",
 		},
-		expected: 60,
+		expected: 1,
 	},
 }
