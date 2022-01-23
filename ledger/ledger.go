@@ -2,6 +2,7 @@ package ledger
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 )
@@ -13,6 +14,10 @@ type Entry struct {
 }
 
 func FormatLedger(currency string, locale string, entries []Entry) (string, error) {
+	fmt.Println("")
+	fmt.Println("============================ IN ============================")
+	fmt.Println("currency: ", currency, "| locale: ", locale, "| entries: ", entries)
+
 	var entriesCopy []Entry
 	for _, e := range entries {
 		entriesCopy = append(entriesCopy, e)
@@ -221,5 +226,11 @@ func FormatLedger(currency string, locale string, entries []Entry) (string, erro
 	for i := 0; i < len(entriesCopy); i++ {
 		s += ss[i]
 	}
+
+	fmt.Println("============================================================")
+	fmt.Println("=========================== OUT ============================")
+	fmt.Println("============================================================")
+	fmt.Println(s)
+	fmt.Println("")
 	return s, nil
 }
