@@ -1,6 +1,8 @@
 package pov
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Define the Graph type here.
 type Graph struct {
@@ -73,14 +75,56 @@ func (g *Graph) ArcList() []string {
 	return arcs
 }
 
+// Find if value is in slice
+func contains(s []string, e string) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
+}
+
+// Find the Parent of a node
+func (g *Graph) FindParent(child string, skip []string) *node {
+	for _, n := range g.children { // Loop over all nodes
+		for _, c := range n.children { // Loop over all children of each node
+			if c.value == child && !contains(skip, n.value) { // If child is found and not in stack
+				return n // Return parent
+			}
+		}
+	}
+	return nil
+}
+
+// Remove a child from a node
+func (n *node) RemoveChild(child string) {
+	for i, c := range n.children { // Loop over all children
+		if c.value == child { // If child is found
+			n.children = append(n.children[:i], n.children[i+1:]...) // Splice child out from i
+			return
+		}
+	}
+}
+
+// Adds a child from a node
+func (n *node) AddChild(child *node) {
+	n.children = append(n.children, child)
+}
+
 // Change the root of the graph
-// Can create a new graph if we like or do the change in place
+// We will change g in place
 func (g *Graph) ChangeRoot(oldRoot, newRoot string) *Graph {
-
-	newGraph := New()
-
-	fmt.Println("oldRoot:", oldRoot)
-	fmt.Println("newRoot:", newRoot)
-
-	return newGraph
+	stack := make([]string, 0) // Stack of nodes to skip when finding true Parent - to avoid infinite loop
+	current := newRoot         // We will start rerooting from newRoot
+	// Loop until we find the oldroot - and stop rerooting
+	for g.FindNode(current).value != oldRoot {
+		current_node := g.FindNode(current)               // Find node representation of x
+		parent := g.FindParent(current_node.value, stack) // Find x's parent
+		parent.RemoveChild(current_node.value)            // Remove x from parent
+		current_node.AddChild(parent)                     // Add parent to newRoot
+		stack = append(stack, current)                    // So we can skip it
+		current = parent.value                            // Set current to parent
+	}
+	return g
 }
