@@ -6,6 +6,16 @@ import (
 )
 
 var validBoards = []string{
+	// Large 5x5 board with 7 bombs
+	`
++-----+
+|1*2*1|
+|11322|
+| 12*2|
+|12*4*|
+|1*3*2|
++-----+`,
+
 	// zero size board
 	`
 ++
@@ -71,16 +81,6 @@ var validBoards = []string{
 |1*22*2|
 |111111|
 +------+`,
-
-	// Large 5x5 board with 7 bombs
-	`
-+-----+
-|1*2*1|
-|11322|
-| 12*2|
-|12*4*|
-|1*3*2|
-+-----+`,
 
 	// Small 1x5 board with 2 bombs
 	`
