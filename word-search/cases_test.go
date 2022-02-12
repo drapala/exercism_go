@@ -12,10 +12,17 @@ var testCases = []struct {
 	expectError bool
 }{
 	{
+		"Should locate words written top right to bottom left",
+		[]string{"jefblpepre", "camdcimgtc", "oivokprjsm", "pbwasqroua", "rixilelhrs", "wolcqlirpc", "screeaumgr", "alxhpburyi", "jalaycalmp", "clojurermt"},
+		[]string{"clojure", "elixir", "ecmascript", "rust", "java", "lua", "lisp", "ruby"},
+		map[string][2][2]int{"clojure": {{0, 9}, {6, 9}}, "elixir": {{5, 4}, {0, 4}}, "ecmascript": {{9, 0}, {9, 9}}, "rust": {{8, 4}, {8, 1}}, "java": {{0, 0}, {3, 3}}, "lua": {{7, 8}, {5, 6}}, "lisp": {{2, 5}, {5, 2}}, "ruby": {{7, 5}, {4, 8}}},
+		false,
+	},
+	{
 		"Should locate multiple words written in different horizontal directions",
 		[]string{"jefblpepre", "camdcimgtc", "oivokprjsm", "pbwasqroua", "rixilelhrs", "wolcqlirpc", "screeaumgr", "alxhpburyi", "jalaycalmp", "clojurermt"},
 		[]string{"elixir", "clojure"},
-		map[string][2][2]int{"clojure": {{0, 9}, {6, 9}}, "elixir": {{5, 4}, {0, 4}}},
+		map[string][2][2]int{"elixir": {{5, 4}, {0, 4}}, "clojure": {{0, 9}, {6, 9}}},
 		false,
 	},
 	{
@@ -135,13 +142,6 @@ var testCases = []struct {
 		[]string{"jefblpepre", "camdcimgtc", "oivokprjsm", "pbwasqroua", "rixilelhrs", "wolcqlirpc", "screeaumgr", "alxhpburyi", "jalaycalmp", "clojurermt"},
 		[]string{"clojure", "elixir", "ecmascript", "rust", "java", "lua", "lisp"},
 		map[string][2][2]int{"clojure": {{0, 9}, {6, 9}}, "ecmascript": {{9, 0}, {9, 9}}, "elixir": {{5, 4}, {0, 4}}, "java": {{0, 0}, {3, 3}}, "lisp": {{2, 5}, {5, 2}}, "lua": {{7, 8}, {5, 6}}, "rust": {{8, 4}, {8, 1}}},
-		false,
-	},
-	{
-		"Should locate words written top right to bottom left",
-		[]string{"jefblpepre", "camdcimgtc", "oivokprjsm", "pbwasqroua", "rixilelhrs", "wolcqlirpc", "screeaumgr", "alxhpburyi", "jalaycalmp", "clojurermt"},
-		[]string{"clojure", "elixir", "ecmascript", "rust", "java", "lua", "lisp", "ruby"},
-		map[string][2][2]int{"clojure": {{0, 9}, {6, 9}}, "ecmascript": {{9, 0}, {9, 9}}, "elixir": {{5, 4}, {0, 4}}, "java": {{0, 0}, {3, 3}}, "lisp": {{2, 5}, {5, 2}}, "lua": {{7, 8}, {5, 6}}, "ruby": {{7, 5}, {4, 8}}, "rust": {{8, 4}, {8, 1}}},
 		false,
 	},
 	{

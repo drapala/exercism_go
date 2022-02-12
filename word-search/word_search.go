@@ -1,6 +1,9 @@
 package wordsearch
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type board struct {
 	rows  int
@@ -52,9 +55,78 @@ func (b *board) right2left() []string {
 	return words
 }
 
-func looptillbound(r, c int, b *board, words []string, i *int) {
-	var diag_r, diag_c int = r, c              // Reset
-	for diag_r != b.rows && diag_c != b.cols { // While not out of bounds
+// top-left -> bottom-right
+func (b *board) topleft2bottomright() []string {
+	words := make([]string, b.cols+b.rows-1) // -1 because we don't count [0,0] twice
+	var i int = 0
+	// Sweep right across columns
+	var r int = 0 // Pin it
+	for c := 0; c < b.cols; c++ {
+		loop_topleft2bottomright(r, c, b, words, &i)
+	}
+	// Sweep down across rows
+	var c int = 0                 // Pin it
+	for r := 1; r < b.rows; r++ { // Note this is shifted by 1 to not double count
+		loop_topleft2bottomright(r, c, b, words, &i)
+	}
+	return words
+}
+
+// bottom-right -> top-left
+func (b *board) bottomright2topleft() []string {
+	words := make([]string, b.cols+b.rows-1) // -1 because we don't count [0,0] twice
+	var i int = 0
+	// Sweep left across columns
+	var r int = b.rows - 1 // Pin it
+	for c := b.cols - 1; c >= 0; c-- {
+		loop_bottomright2topleft(r, c, b, words, &i)
+	}
+	// Sweep up across rows
+	var c int = b.cols - 1             // Pin it
+	for r := b.rows - 2; r >= 0; r-- { // Note this is shifted by 1 to not double count
+		loop_bottomright2topleft(r, c, b, words, &i)
+	}
+	return words
+}
+
+// top-right -> bottom-left
+func (b *board) topright2bottomleft() []string {
+	words := make([]string, b.cols+b.rows-1) // -1 because we don't count [0,0] twice
+	var i int = 0
+	// Sweep left across columns
+	var r int = 0 // Pin it
+	for c := b.cols - 1; c >= 0; c-- {
+		loop_topright2bottomleft(r, c, b, words, &i)
+	}
+	// Sweep down across rows
+	var c int = b.cols - 1        // Pin it
+	for r := 1; r < b.rows; r++ { // Note this is shifted by 1 to not double count
+		loop_topright2bottomleft(r, c, b, words, &i)
+	}
+	return words
+}
+
+// bottom-left -> top-right
+func (b *board) bottomleft2topright() []string {
+	words := make([]string, b.cols+b.rows-1) // -1 because we don't count [0,0] twice
+	var i int = 0
+	// Sweep right across columns
+	var r int = b.rows - 1 // Pin it
+	for c := 0; c < b.cols; c++ {
+		loop_bottomleft2topright(r, c, b, words, &i)
+	}
+	// Sweep up across rows
+	var c int = 0                      // Pin it
+	for r := b.rows - 2; r >= 0; r-- { // Note this is shifted by 1 to not double count
+		loop_bottomleft2topright(r, c, b, words, &i)
+	}
+	return words
+}
+
+// Helpers
+func loop_topleft2bottomright(r, c int, b *board, words []string, i *int) {
+	var diag_r, diag_c int = r, c                                              // Reset
+	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
 		words[*i] += string(b.words[diag_r][diag_c])
 		diag_r++
 		diag_c++
@@ -62,42 +134,35 @@ func looptillbound(r, c int, b *board, words []string, i *int) {
 	*i++
 }
 
-// top-left -> bottom-right
-func (b *board) topleft2bottomright() []string {
-	words := make([]string, b.cols+b.rows-1) // -1 because we don't count [0,0] twice
-	var i int = 0
-
-	// Sweep right across columns
-	var r int = 0
-	for c := 0; c < b.cols; c++ {
-		var diag_r, diag_c int = r, c              // Reset
-		for diag_r != b.rows && diag_c != b.cols { // While not out of bounds
-			words[i] += string(b.words[diag_r][diag_c])
-			diag_r++
-			diag_c++
-		}
-		i++
+func loop_bottomright2topleft(r, c int, b *board, words []string, i *int) {
+	var diag_r, diag_c int = r, c                                              // Reset
+	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
+		words[*i] += string(b.words[diag_r][diag_c])
+		diag_r--
+		diag_c--
 	}
-	// Sweep down across rows
-	var c int = 0
-	for r := 1; r < b.rows; r++ {
-		var diag_r, diag_c int = r, c              // Reset
-		for diag_r != b.rows && diag_c != b.cols { // While not out of bounds
-			words[i] += string(b.words[diag_r][diag_c])
-			diag_r++
-			diag_c++
-		}
-		i++
-	}
-
-	return words
+	*i++
 }
 
-// bottom-right -> top-left
+func loop_topright2bottomleft(r, c int, b *board, words []string, i *int) {
+	var diag_r, diag_c int = r, c                                              // Reset
+	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
+		words[*i] += string(b.words[diag_r][diag_c])
+		diag_r++
+		diag_c--
+	}
+	*i++
+}
 
-// top-right -> bottom-left
-
-// bottom-left -> top-right
+func loop_bottomleft2topright(r, c int, b *board, words []string, i *int) {
+	var diag_r, diag_c int = r, c                                              // Reset
+	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
+		words[*i] += string(b.words[diag_r][diag_c])
+		diag_r--
+		diag_c++
+	}
+	*i++
+}
 
 func Solve(words []string, puzzle []string) (map[string][2][2]int, error) {
 	fmt.Println("puzzle:", puzzle)
@@ -118,12 +183,36 @@ func Solve(words []string, puzzle []string) (map[string][2][2]int, error) {
 	// Fill up words
 	b.words = puzzle
 
-	// Test
-	fmt.Println("Top 2 bottom: ", (b.top2bottom()))
-	fmt.Println("Bottom 2 top: ", (b.bottom2top()))
-	fmt.Println("Left 2 right: ", (b.left2right()))
-	fmt.Println("Right 2 left: ", (b.right2left()))
-	fmt.Println("Top Left 2 Bottom Right: ", (b.topleft2bottomright()))
+	// Print
+	fmt.Println("#0 | Top 2 bottom: ", (b.top2bottom()))
+	fmt.Println("#1 | Bottom 2 top: ", (b.bottom2top()))
+	fmt.Println("#2 | Left 2 right: ", (b.left2right()))
+	fmt.Println("#3 | Right 2 left: ", (b.right2left()))
+	fmt.Println("#4 | Top Left 2 Bottom Right: ", (b.topleft2bottomright()))
+	fmt.Println("#5 | Bottom Right 2 Top Left: ", (b.bottomright2topleft()))
+	fmt.Println("#6 | Top Right 2 Bottom Left: ", (b.topright2bottomleft()))
+	fmt.Println("#7 | Bottom Left 2 Top Right: ", (b.bottomleft2topright()))
+
+	searchlist := [][]string{b.top2bottom(), b.bottom2top(), b.left2right(), b.right2left(), b.topleft2bottomright(), b.bottomright2topleft(), b.topright2bottomleft(), b.bottomleft2topright()}
+
+	// Look for hits
+	for _, word := range words {
+		for s, search := range searchlist {
+			if findwordinslice(word, search) != -1 {
+				fmt.Println("Found:", word, " in search slice #: ", s, " at word #: ", findwordinslice(word, search), " in ", search[findwordinslice(word, search)])
+			}
+		}
+	}
 
 	return coords, nil
+}
+
+// Uses Regex to check if word is contained in any of the words
+func findwordinslice(word string, search []string) int {
+	for i, w := range search {
+		if strings.Contains(w, word) {
+			return i // Returns index of word in search slice
+		}
+	}
+	return -1
 }
