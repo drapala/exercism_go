@@ -1,7 +1,7 @@
 package wordsearch
 
 import (
-	"fmt"
+	"errors"
 	"strings"
 )
 
@@ -11,24 +11,19 @@ type board struct {
 	words []string
 }
 
-type coordinates struct {
-	start []int
-	end   []int
-}
-
 type wordmap struct {
 	word  string
-	coord [][]int
+	coord [2][2]int
 }
 
 // top -> bottom
 func (b *board) top2bottom() []wordmap {
-	wm := make([]wordmap, b.rows)
+	wm := make([]wordmap, b.cols)
 	for c := 0; c < b.cols; c++ {
 		for r := 0; r < b.rows; r++ {
 			wm[c].word += string(b.words[r][c])
-			wm[c].coord.start = []int{c, 0}
-			wm[c].coord.end = []int{c, b.rows - 1}
+			wm[c].coord[0] = [2]int{c, 0}
+			wm[c].coord[1] = [2]int{c, b.rows - 1}
 		}
 	}
 	return wm
@@ -36,12 +31,12 @@ func (b *board) top2bottom() []wordmap {
 
 // bottom -> top
 func (b *board) bottom2top() []wordmap {
-	wm := make([]wordmap, b.rows)
+	wm := make([]wordmap, b.cols)
 	for c := 0; c < b.cols; c++ {
 		for r := b.rows - 1; r >= 0; r-- {
 			wm[c].word += string(b.words[r][c])
-			wm[c].coord.start = []int{c, b.rows - 1}
-			wm[c].coord.end = []int{c, 0}
+			wm[c].coord[0] = [2]int{c, b.rows - 1}
+			wm[c].coord[1] = [2]int{c, 0}
 		}
 	}
 	return wm
@@ -49,12 +44,12 @@ func (b *board) bottom2top() []wordmap {
 
 // left -> right
 func (b *board) left2right() []wordmap {
-	wm := make([]wordmap, b.rows)
+	wm := make([]wordmap, b.cols)
 	for r := 0; r < b.rows; r++ {
 		for c := 0; c < b.cols; c++ {
 			wm[r].word += string(b.words[r][c])
-			wm[r].coord.start = []int{0, r}
-			wm[r].coord.end = []int{b.cols - 1, r}
+			wm[r].coord[0] = [2]int{0, r}
+			wm[r].coord[1] = [2]int{b.cols - 1, r}
 		}
 	}
 	return wm
@@ -62,12 +57,12 @@ func (b *board) left2right() []wordmap {
 
 // right -> left
 func (b *board) right2left() []wordmap {
-	wm := make([]wordmap, b.rows)
+	wm := make([]wordmap, b.cols)
 	for r := 0; r < b.rows; r++ {
 		for c := b.cols - 1; c >= 0; c-- {
 			wm[r].word += string(b.words[r][c])
-			wm[r].coord.start = []int{b.cols - 1, r}
-			wm[r].coord.end = []int{0, r}
+			wm[r].coord[0] = [2]int{b.cols - 1, r}
+			wm[r].coord[1] = [2]int{0, r}
 		}
 	}
 	return wm
@@ -146,8 +141,8 @@ func loop_topleft2bottomright(r, c int, b *board, wm []wordmap, i *int) {
 	var diag_r, diag_c int = r, c                                              // Reset
 	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
 		wm[*i].word += string(b.words[diag_r][diag_c])
-		wm[*i].coord.start = []int{c, r}
-		wm[*i].coord.end = []int{diag_c, diag_r}
+		wm[*i].coord[0] = [2]int{c, r}
+		wm[*i].coord[1] = [2]int{diag_c, diag_r}
 
 		diag_r++
 		diag_c++
@@ -159,8 +154,8 @@ func loop_bottomright2topleft(r, c int, b *board, wm []wordmap, i *int) {
 	var diag_r, diag_c int = r, c                                              // Reset
 	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
 		wm[*i].word += string(b.words[diag_r][diag_c])
-		wm[*i].coord.start = []int{c, r}
-		wm[*i].coord.end = []int{diag_c, diag_r}
+		wm[*i].coord[0] = [2]int{c, r}
+		wm[*i].coord[1] = [2]int{diag_c, diag_r}
 
 		diag_r--
 		diag_c--
@@ -172,8 +167,8 @@ func loop_topright2bottomleft(r, c int, b *board, wm []wordmap, i *int) {
 	var diag_r, diag_c int = r, c                                              // Reset
 	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
 		wm[*i].word += string(b.words[diag_r][diag_c])
-		wm[*i].coord.start = []int{c, r}
-		wm[*i].coord.end = []int{diag_c, diag_r}
+		wm[*i].coord[0] = [2]int{c, r}
+		wm[*i].coord[1] = [2]int{diag_c, diag_r}
 		diag_r++
 		diag_c--
 	}
@@ -184,17 +179,16 @@ func loop_bottomleft2topright(r, c int, b *board, wm []wordmap, i *int) {
 	var diag_r, diag_c int = r, c                                              // Reset
 	for diag_r != -1 && diag_r != b.rows && diag_c != -1 && diag_c != b.cols { // While not out of bounds
 		wm[*i].word += string(b.words[diag_r][diag_c])
-		wm[*i].coord.start = []int{c, r}
-		wm[*i].coord.end = []int{diag_c, diag_r}
+		wm[*i].coord[0] = [2]int{c, r}
+		wm[*i].coord[1] = [2]int{diag_c, diag_r}
 		diag_r--
 		diag_c++
 	}
 	*i++
 }
 
+// Main function
 func Solve(words []string, puzzle []string) (map[string][2][2]int, error) {
-	fmt.Println("puzzle:", puzzle)
-	fmt.Println("words:", words)
 	var b board
 
 	b.rows = len(puzzle)    // Length of puzzle is number of rows in the board
@@ -203,50 +197,103 @@ func Solve(words []string, puzzle []string) (map[string][2][2]int, error) {
 	// Error handling
 	for r := range puzzle { // Puzzle string length must equal to be rectangular
 		if len(puzzle[r]) != b.cols {
-			return nil, fmt.Errorf("puzzle is not rectangular")
+			return nil, errors.New("puzzle is not rectangular")
 		}
 	}
 	// Fill up words
 	b.words = puzzle
-
-	// Print
-	fmt.Println("############################################################")
-	fmt.Println("#0 | Top 2 bottom: ", (b.top2bottom()))
-	fmt.Println("############################################################")
-	fmt.Println("#1 | Bottom 2 top: ", (b.bottom2top()))
-	fmt.Println("############################################################")
-	fmt.Println("#2 | Left 2 right: ", (b.left2right()))
-	fmt.Println("############################################################")
-	fmt.Println("#3 | Right 2 left: ", (b.right2left()))
-	fmt.Println("############################################################")
-	fmt.Println("#4 | Top Left 2 Bottom Right: ", (b.topleft2bottomright()))
-	fmt.Println("############################################################")
-	fmt.Println("#5 | Bottom Right 2 Top Left: ", (b.bottomright2topleft()))
-	fmt.Println("############################################################")
-	fmt.Println("#6 | Top Right 2 Bottom Left: ", (b.topright2bottomleft()))
-	fmt.Println("############################################################")
-	fmt.Println("#7 | Bottom Left 2 Top Right: ", (b.bottomleft2topright()))
-	fmt.Println("############################################################")
 
 	searchlist := [][]wordmap{b.top2bottom(), b.bottom2top(), b.left2right(), b.right2left(), b.topleft2bottomright(), b.bottomright2topleft(), b.topright2bottomleft(), b.bottomleft2topright()}
 
 	// Coordinates to return
 	coords := make(map[string][2][2]int)
 
+	var found bool = false // if found is true, we can stop searching
+
 	// Identify hits
 	for _, word := range words {
+		found = false
 		for s, search := range searchlist {
 			index, shift := findwordinslice(word, search)
 			if index != -1 {
-				fmt.Println("Found:", word, " in search slice #: ", s, " at word #: ", index, " in ", search[index], " starting at index #: ", shift)
+				coords[word] = search[index].coord // Temp
+				first := search[index].coord[0]
+				second := search[index].coord[1]
 
 				// Add to coords
-				coords[word] = search[index].coord
+				switch s {
+				case 0: // Top 2 bottom
 
+					first[1] = first[1] + shift            // r + shift
+					second[1] = first[1] + (len(word) - 1) // plus length
+					coords[word] = [2][2]int{first, second}
+
+				case 1: // Bottom 2 top
+
+					first[1] = first[1] - shift            // r - shift
+					second[1] = first[1] - (len(word) - 1) // minus length
+					coords[word] = [2][2]int{first, second}
+
+				case 2: // Left 2 right
+
+					first[0] = first[0] + shift            // c + shift
+					second[0] = first[0] + (len(word) - 1) // plus length
+					coords[word] = [2][2]int{first, second}
+
+				case 3: // Right 2 left
+
+					first[0] = first[0] - shift            // c - shift
+					second[0] = first[0] - (len(word) - 1) // minus length
+					coords[word] = [2][2]int{first, second}
+
+				case 4: // Top Left 2 Bottom Right
+
+					first[0] = first[0] + shift            // c + shift
+					first[1] = first[1] + shift            // r + shift
+					second[0] = first[0] + (len(word) - 1) // plus length
+					second[1] = first[1] + (len(word) - 1) // plus length
+
+					coords[word] = [2][2]int{first, second}
+
+				case 5: // Bottom Right 2 Top Left
+
+					first[0] = first[0] - shift            // c - shift
+					first[1] = first[1] - shift            // r - shift
+					second[0] = first[0] - (len(word) - 1) // minus length
+					second[1] = first[1] - (len(word) - 1) // minus length
+
+					coords[word] = [2][2]int{first, second}
+
+				case 6: // Top Right 2 Bottom Left
+
+					first[0] = first[0] - shift            // c - shift
+					first[1] = first[1] + shift            // r + shift
+					second[0] = first[0] - (len(word) - 1) // minus length
+					second[1] = first[1] + (len(word) - 1) // plus length
+
+					coords[word] = [2][2]int{first, second}
+
+				case 7: // Bottom Left 2 Top Right
+
+					first[0] = first[0] + shift            // c + shift
+					first[1] = first[1] - shift            // r - shift
+					second[0] = first[0] + (len(word) - 1) // plus length
+					second[1] = first[1] - (len(word) - 1) // minus length
+
+					coords[word] = [2][2]int{first, second}
+
+				default:
+					// Nothing
+				}
+
+				// Set flag
+				found = true
 			}
 		}
+		if !found {
+			return nil, errors.New("could not find word: " + word)
+		}
 	}
-
 	return coords, nil
 }
 
