@@ -12,6 +12,13 @@ var testCases = []struct {
 	expectError bool
 }{
 	{
+		"Should locate multiple words written in different horizontal directions",
+		[]string{"jefblpepre", "camdcimgtc", "oivokprjsm", "pbwasqroua", "rixilelhrs", "wolcqlirpc", "screeaumgr", "alxhpburyi", "jalaycalmp", "clojurermt"},
+		[]string{"elixir", "clojure"},
+		map[string][2][2]int{"clojure": {{0, 9}, {6, 9}}, "elixir": {{5, 4}, {0, 4}}},
+		false,
+	},
+	{
 		"Should accept an initial game grid and a target search word",
 		[]string{"jefblpepre"},
 		[]string{"clojure"},
@@ -93,13 +100,6 @@ var testCases = []struct {
 		[]string{"rixilelhrs"},
 		[]string{"elixir"},
 		map[string][2][2]int{"elixir": {{5, 0}, {0, 0}}},
-		false,
-	},
-	{
-		"Should locate multiple words written in different horizontal directions",
-		[]string{"jefblpepre", "camdcimgtc", "oivokprjsm", "pbwasqroua", "rixilelhrs", "wolcqlirpc", "screeaumgr", "alxhpburyi", "jalaycalmp", "clojurermt"},
-		[]string{"elixir", "clojure"},
-		map[string][2][2]int{"clojure": {{0, 9}, {6, 9}}, "elixir": {{5, 4}, {0, 4}}},
 		false,
 	},
 	{
